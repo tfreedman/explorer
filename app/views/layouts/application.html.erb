@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Explorer</title>
+    <title><%= @title %> - BlockExplorer</title>
     <%= csrf_meta_tags %>
-
     <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
   </head>
 
   <body>
-    <%= yield %>
+    <header>
+      <a href="/">Home</a>
+      <a href="/contact">Contact</a>
+    </header>
+    <article>
+      <% if @debug_mode %>
+        <%= @output %>
+      <% end %>
+      <%= yield %>
+    </article>
+    <footer>
+
+    </footer>
   </body>
 </html>

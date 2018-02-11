@@ -1,0 +1,39 @@
+<h1>Transaction</h1>
+<p>Transaction <a href="/tx/<%= params[:transaction] %>"><%= params[:transaction] %></a></p>
+<table>
+  <tr></tr>
+  <tr>
+    <% @output["vout"].each do |vout| %>
+      <% vout["scriptPubKey"]["addresses"].each do |address| %>
+        <td><a href="/address/<%= address %>"><%= address %></a></td>
+      <% end %>
+      <td><%= vout["value"] %> NMC</td>
+    <% end %>
+  </tr>
+</table>
+
+<h2>Summary</h2>
+<table>
+  <tr>
+    <td>Size</td>
+    <td><%= @output["size"] %></td>
+  </tr>
+  <tr>
+    <td>Block</td>
+    <td><a href="/block/<%= @output['height'] %>"><%= @output["height"] %></a></td>
+  </tr>
+</table>
+
+<h2>Input scripts</h2>
+<table>
+  <% @output["vin"].each_with_index do |vin, index| %>
+    <tr><%= index %>. <%= vin %></tr>
+  <% end %>
+</table>
+
+<h2>Output scripts</h2>
+<table>
+  <% @output["vout"].each_with_index do |vout, index| %>
+    <tr><%= index %>. <%= vout["scriptPubKey"]["asm"] %></tr>
+  <% end %>
+</table>

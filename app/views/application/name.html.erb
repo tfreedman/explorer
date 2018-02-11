@@ -1,0 +1,47 @@
+<h1>Name <%= params[:name] %> <% if params[:type].downcase == 'd' %> (<%= params[:name] %>.bit)<% end %></h1>
+
+<h2>Summary</h2>
+<table>
+  <tr>
+    <td>Status</td>
+    <td><%= @output["expired"] == false ? 'active' : 'expired' %></td>
+  </tr>
+  <tr>
+    <td>Expires after block</td>
+    <td><%= @output["expires_in"] %></td>
+  </tr>
+  <tr>
+    <td>Last update</td>
+    <td><%= @output["height"] %></td>
+  </tr>
+  <tr>
+    <td>Registered since</td>
+    <td></td>
+  </tr>
+</table>
+
+<h2>Current value</h2>
+<pre>
+  <%= @output["value"] %>
+</pre>
+
+
+<h2>Operations</h2>
+<table>
+  <tr>
+    <th>Date/time</th>
+    <th>Block</th>
+    <th>Transaction</th>
+    <th>Operation</th>
+    <th>Value</th>
+  </tr>
+  <% @history.each do |tx| %>
+    <tr>
+      <td><%= tx %></td>
+      <td><a href="/block/<%= tx['height'] %>"><%= tx["height"] %></a></td>
+      <td><a href="/tx/<%= tx['txid'] %>"><%= tx["txid"] %></a></td>
+      <td></td>
+      <td><%= tx["value"] %></td>
+    </tr>
+  <% end %>
+</table>

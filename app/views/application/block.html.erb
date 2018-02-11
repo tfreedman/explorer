@@ -1,0 +1,75 @@
+<% if !@output.blank? %>
+  <h1>Block #<%= @output["height"] %></h1>
+  <table>
+    <tr>
+      <td>Height</td>
+      <td><%= @output["height"] %></td>
+    </tr>
+  
+    <tr>
+      <td>Version</td>
+      <td><%= @output["version"] %></td>
+    </tr>
+  
+    <tr>
+      <td>Date/time</td>
+      <td><%= @output["time"] %></td>
+    </tr>
+  
+    <tr>
+      <td>Difficulty</td>
+      <td><%= @output["difficulty"] %></td>
+    </tr>
+  
+    <tr>
+      <td>Number of transactions</td>
+      <td><%= @output["tx"].count %></td>
+    </tr>
+  
+    <tr>
+      <td>Output total</td>
+      <td></td>
+    </tr>
+  
+    <tr>
+      <td>Input total</td>
+      <td></td>
+    </tr>
+  
+    <tr>
+      <td>Hash</td>
+      <td><%= @output["hash"] %></td>
+    </tr>
+  
+    <tr>
+      <td>Previous block</td>
+      <td><a href="/block/<%= @output["previousblockhash"] %>"><%= @output["previousblockhash"] %></a></td>
+    </tr>
+  
+    <tr>
+      <td>Next block</td>
+      <td><a href="/block/<%= @output["nextblockhash"] %>"><%= @output["nextblockhash"] %></a></td>
+    </tr>
+  
+    <tr>
+      <td>Merkle root</td>
+      <td><%= @output["merkleroot"] %></td>
+    </tr>
+  </table>
+  
+  <h2>Name operations</h2>
+  <table>
+  
+  </table>
+  
+  <h2>Transactions</h2>
+  <table>
+    <% @output["tx"].each do |tx| %>
+      <tr>
+        <td><a href="/tx/<%= tx %>"><%= tx %></a></td>
+      </tr>
+    <% end %>
+  </table>
+<% else %>
+  <h1>Block not found</h1>
+<% end %>

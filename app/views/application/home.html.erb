@@ -1,0 +1,43 @@
+<h2>Welcome</h2>
+<p>Some random text can go here</p>
+
+
+<h2>Latest blocks</h2>
+<table>
+  <tr>
+      <th>Height</th>
+      <th>Age</th>
+      <th>Transactions</th>
+      <th>Total Sent</th>
+  </tr>
+  <% @latest_blocks.each do |block| %>
+    <tr>
+      <td><a href="/block/<%= block['height'] %>"><%= block['height'] %></a></td>
+      <td><%= distance_of_time_in_words(block["time"], Time.now) %> ago</td>
+      <td><%= block["tx"].count %></td>
+      <td><%= block["total_sent"] %></td>
+    </tr>
+  <% end %>
+</table>
+
+<h2>Latest operations</h2>
+<table>
+  <tr>
+    <th>Age</th>
+    <th>Block</th>
+    <th>Transaction</th>
+    <th>Operation</th>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <% @latest_transactions.each do |transaction| %>
+    <tr>
+      <td><%= transaction["age"] %></td>
+      <td><a href="/block/<%= transaction['height'] %>"><%= transaction['height'] %></a></td>
+      <td><a href="/tx/<%= transaction['txid'] %>"><%= transaction["txid"] %></a></td>
+      <td><%= transaction["operation"] %></td>
+      <td><%= transaction["name"] %></td>
+      <td><%= transaction["value"] %></td>
+    </tr>
+  <% end %>
+</table>
