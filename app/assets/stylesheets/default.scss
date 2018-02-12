@@ -1,0 +1,23 @@
+body {margin: 0}
+
+article {
+  max-width: 900px;
+  margin: 0 auto;
+  margin-bottom: 150px;
+  word-wrap: break-word;
+
+  .flex-container {display: flex}
+  .half {flex-grow: 1; max-width: 450px}
+}
+
+header {max-width: 900px; margin: 0 auto}
+
+footer {
+  max-width: 900px;
+  text-align: right;
+  margin: 0 auto;
+  height: 150px;
+  bottom: 0;
+  width: 100%;
+}
+

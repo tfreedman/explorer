@@ -3,7 +3,7 @@
   <table>
     <tr>
       <td>Height</td>
-      <td><%= @output["height"] %></td>
+      <td><a href="/block/<%= @output['height'] %>"><%= @output["height"] %></a></td>
     </tr>
   
     <tr>
@@ -13,7 +13,7 @@
   
     <tr>
       <td>Date/time</td>
-      <td><%= @output["time"] %></td>
+      <td><%= Time.at(@output["time"]) %></td>
     </tr>
   
     <tr>
@@ -59,7 +59,20 @@
   
   <h2>Name operations</h2>
   <table>
-  
+    <tr>
+      <th>Transaction</th>
+      <th>Operation</th>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+    <% @name_operations.each do |op| %>
+      <tr>
+        <td><a href="/tx/<%= op['txid'] %>"><%= op["txid"] %></a></td>
+        <td><%= op["operation"] %></td>
+        <td><%= op["name"] %></td>
+        <td><%= op["value"] %></td>
+      </tr>
+    <% end %>
   </table>
   
   <h2>Transactions</h2>

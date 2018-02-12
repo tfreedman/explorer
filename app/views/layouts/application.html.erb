@@ -11,6 +11,10 @@
     <header>
       <a href="/">Home</a>
       <a href="/contact">Contact</a>
+      <%= form_tag({:action=>"search", :controller=>"application"},{:method=>"post"}) do %>
+        <%= search_field_tag 'query' %>
+        <%= button_tag 'Search' %>
+      <% end %>
     </header>
     <article>
       <% if @debug_mode %>
@@ -19,7 +23,7 @@
       <%= yield %>
     </article>
     <footer>
-
+      <a href="https://github.com/tfreedman/explorer">Source</a>
     </footer>
   </body>
 </html>
