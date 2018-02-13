@@ -28,12 +28,12 @@
   
     <tr>
       <td>Output total</td>
-      <td></td>
+      <td>TODO</td>
     </tr>
   
     <tr>
       <td>Input total</td>
-      <td></td>
+      <td>TODO</td>
     </tr>
   
     <tr>
@@ -43,12 +43,12 @@
   
     <tr>
       <td>Previous block</td>
-      <td><a href="/block/<%= @output["previousblockhash"] %>"><%= @output["previousblockhash"] %></a></td>
+      <td><a href="/block/<%= @output['previousblockhash'] %>"><%= @output["previousblockhash"] %></a></td>
     </tr>
   
     <tr>
       <td>Next block</td>
-      <td><a href="/block/<%= @output["nextblockhash"] %>"><%= @output["nextblockhash"] %></a></td>
+      <td><a href="/block/<%= @output['nextblockhash'] %>"><%= @output["nextblockhash"] %></a></td>
     </tr>
   
     <tr>
@@ -68,8 +68,8 @@
     <% @name_operations.each do |op| %>
       <tr>
         <td><a href="/tx/<%= op['txid'] %>"><%= op["txid"] %></a></td>
-        <td><%= op["operation"] %></td>
-        <td><%= op["name"] %></td>
+        <td><%= op["op"] %></td>
+        <td><a href="/name/<%= op['name'] %>"><%= op["name"] %></a></td>
         <td><%= op["value"] %></td>
       </tr>
     <% end %>

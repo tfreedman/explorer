@@ -18,7 +18,7 @@
       </tr>
       <tr>
         <td>Registered since</td>
-        <td></td>
+        <td><a href="/block/<%= @history.last['height'] %>"><%= @history.last['height'] %></a></td>
       </tr>
     </table>
   </div>
@@ -47,7 +47,7 @@
           <td><%= Time.at(tx["time"]) %></td>
           <td><a href="/block/<%= tx['height'] %>"><%= tx["height"] %></a></td>
           <td><a href="/tx/<%= tx['txid'] %>"><%= tx["txid"] %></a></td>
-          <td></td>
+          <td><%= tx['op'] %></td>
           <td><%= tx["value"] %></td>
         </tr>
       <% end %>

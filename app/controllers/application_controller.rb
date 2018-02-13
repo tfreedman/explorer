@@ -51,7 +51,7 @@ class ApplicationController < ActionController::Base
     elsif query.to_s.count('a-fA-F') > 0
       redirect_to "/block/#{query}"
     elsif query.to_s.count('a-fA-F') == 0
-      redirect_to "/address/#{query}"
+      redirect_to "/block/#{query}"
     else
       redirect_to '/404'
     end
@@ -73,24 +73,19 @@ class ApplicationController < ActionController::Base
         end
       end
     end
-#    @name_operations = @out
-#    @latest_transactions.each_with_index do |tx, index|
-#      @latest_transactions[index]["age"] = get_block(@latest_transactions[index]["height"].to_s)["time"]
-##      details = get_transaction(@latest_transactions[index]["txid"])
-#      details["vout"].each do |vout|
-#        if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"] == @latest_transactions[index]["name"]
-#          @latest_transactions[index]["operation"] = vout["scriptPubKey"]["nameOp"]["op"]
-#          break
-#        end
-#      end
-#    end
-#    @latest_transactions = @latest_transactions.sort_by {|k| k["age"]}.reverse
   end
 
   def transaction
     @title = "Transaction #{params[:transaction]}"
     @output = get_transaction(params[:transaction])
     @output["height"] = get_block(@output["blockhash"])["height"]
+
+    @output["totals"] = {}
+    @output["totals"]["output"] = 0
+    @output["vout"].each do |vout|
+      @output["totals"]["output"] += vout["value"]
+    end
+    @output["totals"]["input"] = 0
   end
 
   def address
@@ -111,6 +106,12 @@ class ApplicationController < ActionController::Base
     end
     @history.each_with_index do |transaction, index|
       @history[index]["time"] = get_block(transaction["height"].to_s)["time"]
+      details = get_transaction(transaction["txid"])
+      details["vout"].each do |vout|
+        if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"]
+          @history[index]["op"] = vout["scriptPubKey"]["nameOp"]["op"]
+        end
+      end
     end
 
     @history.reverse!
