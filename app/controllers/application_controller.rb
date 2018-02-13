@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
     @latest_blocks = Array.new
     blocks = @output["blocks"] - 6
     @output["blocks"].downto(blocks).each do |n|
-      block = get_block(n.to_s)
+      block = get_block(n)
       total_sent = 0
       block["tx"].each do |txid|
         transaction = get_transaction(txid)
@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
     end
     @latest_transactions = JSON.parse(ApplicationController::namecoin_cli('name_filter "^[i]?d/" 6'))
     @latest_transactions.each_with_index do |tx, index|
-      @latest_transactions[index]["age"] = get_block(@latest_transactions[index]["height"].to_s)["time"]
+      @latest_transactions[index]["age"] = get_block(@latest_transactions[index]["height"])["time"]
       details = get_transaction(@latest_transactions[index]["txid"])
       details["vout"].each do |vout|
         if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"] == @latest_transactions[index]["name"]
@@ -48,9 +48,9 @@ class ApplicationController < ActionController::Base
       redirect_to "/tx/#{query}"
     elsif query.count('g-zG-Z') > 0
       redirect_to "/address/#{query}"
-    elsif query.to_s.count('a-fA-F') > 0
+    elsif query.count('a-fA-F') > 0
       redirect_to "/block/#{query}"
-    elsif query.to_s.count('a-fA-F') == 0
+    elsif query.count('a-fA-F') == 0
       redirect_to "/block/#{query}"
     else
       redirect_to '/404'
@@ -62,7 +62,6 @@ class ApplicationController < ActionController::Base
     @output = get_block(params[:block])
 
     @name_operations = Array.new
-    transactions = Array.new
     txids = @output["tx"]
     txids.each do |txid|
       details = get_transaction(txid)
@@ -73,19 +72,19 @@ class ApplicationController < ActionController::Base
         end
       end
     end
+
+    @output["totals"] = {"output" => 0, "input" => 0}
+    @output["tx"].each_with_index do |txid, index|
+      @output["tx"][index] = get_transaction(txid, true, true)
+      @output["totals"]["output"] += @output["tx"][index]["totals"]["output"]
+      @output["totals"]["input"] += @output["tx"][index]["totals"]["input"]
+    end
   end
 
   def transaction
     @title = "Transaction #{params[:transaction]}"
-    @output = get_transaction(params[:transaction])
+    @output = get_transaction(params[:transaction], true, true)
     @output["height"] = get_block(@output["blockhash"])["height"]
-
-    @output["totals"] = {}
-    @output["totals"]["output"] = 0
-    @output["vout"].each do |vout|
-      @output["totals"]["output"] += vout["value"]
-    end
-    @output["totals"]["input"] = 0
   end
 
   def address
@@ -105,7 +104,7 @@ class ApplicationController < ActionController::Base
       @history = JSON.parse(ApplicationController::namecoin_cli('name_history id/' + params[:name]))
     end
     @history.each_with_index do |transaction, index|
-      @history[index]["time"] = get_block(transaction["height"].to_s)["time"]
+      @history[index]["time"] = get_block(transaction["height"])["time"]
       details = get_transaction(transaction["txid"])
       details["vout"].each do |vout|
         if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"]
@@ -122,15 +121,34 @@ class ApplicationController < ActionController::Base
     return `#{x}`
   end
 
-  def get_transaction(txid)
-    JSON.parse(ApplicationController::namecoin_cli("getrawtransaction #{txid} 1"))
+  def get_transaction(txid, include_input_transactions = false, include_totals = false)
+    output = JSON.parse(ApplicationController::namecoin_cli("getrawtransaction #{txid} 1"))
+    if include_input_transactions
+      output["vin"].each_with_index do |vin, index|
+        if vin["txid"]
+          output["vin"][index]["prevTransaction"] = get_transaction(vin["txid"])
+        end
+      end
+      if include_totals
+        output["totals"] = {"output" => 0, "input" => 0}
+        output["vin"].each do |vin|
+          if vin["prevTransaction"]
+            output["totals"]["input"] += vin["prevTransaction"]["vout"][vin["vout"]]["value"]
+          end
+        end
+        output["vout"].each_with_index do |vout, index|
+          output["totals"]["output"] += vout["value"]
+        end
+      end      
+    end
+    return output
   end
 
   def get_block(block)
     if block.to_s.count('a-fA-F') > 0
       JSON.parse(ApplicationController::namecoin_cli('getblock ' + block))
     else
-      JSON.parse(ApplicationController::namecoin_cli('getblock ' + ApplicationController::namecoin_cli('getblockhash ' + block)))
+      JSON.parse(ApplicationController::namecoin_cli('getblock ' + ApplicationController::namecoin_cli('getblockhash ' + block.to_s)))
     end
   end
 end

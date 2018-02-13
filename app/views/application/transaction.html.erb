@@ -1,15 +1,20 @@
-<h1>Transaction</h1>
-<p>Transaction <a href="/tx/<%= params[:transaction] %>"><%= params[:transaction] %></a></p>
+<h1>Transaction <a href="/tx/<%= params[:transaction] %>"><%= params[:transaction] %></a></h1>
 <div class="flex-container">
   <div class="half">
     <table>
       <tr>
         <th>Inputs</th>
       </tr>
-    
-      <tr>
-        <td>TODO</td>
-      </tr>
+      <% @output["vin"].each do |vin| %>
+        <tr>
+          <% if vin["prevTransaction"] %>
+            <td><a href="/address/<%= vin['prevTransaction']['vout'][vin['vout']]['scriptPubKey']['addresses'][0] %>"><%= vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0] %></a></td>
+            <td><%= vin["prevTransaction"]["vout"][vin["vout"]]["value"] %> NMC</td>
+          <% else %>
+            <td>No inputs (generated coins)</td>        
+          <% end %>
+        </tr>
+      <% end %>
     </table>
   </div>
 
@@ -30,50 +35,58 @@
   </div>
 </div>
 
-<h2>Summary</h2>
-<table>
-  <tr>
-    <td>Size</td>
-    <td><%= @output["size"] %> bytes</td>
-  </tr>
-  <tr>
-    <td>Block</td>
-    <td><a href="/block/<%= @output['height'] %>"><%= @output["height"] %></a></td>
-  </tr>
-  <tr>
-    <td>Total inputs</td>
-    <td><%= @output["totals"]["input"] %> NMC (<%= pluralize(@output["vin"].count, 'script') %>)</td>
-  </tr>
-  <tr>
-    <td>Total outputs</td>
-    <td><%= @output["totals"]["output"] %> NMC (<%= pluralize(@output["vout"].count, 'script') %>)</td>
-  </tr>
-  <tr>
-    <td>Fees</td>
-    <td><%= @output["totals"]["input"] - @output["totals"]["output"] %> NMC</td>
-  </tr>
-</table>
-
-<% @output["vout"].each do |vout| %>
-  <% if vout["scriptPubKey"]["nameOp"] %>
-    <h2>Name operation</h2>
+<div class="flex-container">
+  <div class="half">
+    <h2>Summary</h2>
     <table>
       <tr>
-        <td>Operation</td>
-        <td><%= vout["scriptPubKey"]["nameOp"]["op"] %></td>
+        <td>Size</td>
+        <td><%= @output["size"] %> bytes</td>
       </tr>
       <tr>
-        <td>Name</td>
-        <td><a href="/name/<%= vout['scriptPubKey']['nameOp']['name'] %>"><%= vout["scriptPubKey"]["nameOp"]["name"] %></a></td>
+        <td>Block</td>
+        <td><a href="/block/<%= @output['height'] %>"><%= @output["height"] %></a></td>
       </tr>
+      <tr>
+        <td>Total inputs</td>
+        <td><%= @output["totals"]["input"] %> NMC (<%= pluralize(@output["vin"].count, 'script') %>)</td>
+      </tr>
+      <tr>
+        <td>Total outputs</td>
+        <td><%= @output["totals"]["output"] %> NMC (<%= pluralize(@output["vout"].count, 'script') %>)</td>
+      </tr>
+      <% if @output["totals"]["input"] > 0 %>
+      <tr>
+        <td>Fees</td>
+        <td><%= @output["totals"]["input"] - @output["totals"]["output"] %> NMC</td>
+      </tr>
+      <% end %>
     </table>
-    <pre>
-      <code>
-        <%= vout["scriptPubKey"]["nameOp"]["value"] %>
-      </code>
-    </pre>
-  <% end %>
-<% end %>
+  </div>
+
+  <div class="half">
+    <% @output["vout"].each do |vout| %>
+      <% if vout["scriptPubKey"]["nameOp"] %>
+        <h2>Name operation</h2>
+        <table>
+          <tr>
+            <td>Operation</td>
+            <td><%= vout["scriptPubKey"]["nameOp"]["op"] %></td>
+          </tr>
+          <tr>
+            <td>Name</td>
+            <td><a href="/name/<%= vout['scriptPubKey']['nameOp']['name'] %>"><%= vout["scriptPubKey"]["nameOp"]["name"] %></a></td>
+          </tr>
+        </table>
+        <pre>
+          <code>
+            <%= vout["scriptPubKey"]["nameOp"]["value"] %>
+          </code>
+        </pre>
+      <% end %>
+    <% end %>
+  </div>
+</div>
 
 <h2>Input scripts</h2>
 <table>

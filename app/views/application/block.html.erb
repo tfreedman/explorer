@@ -28,12 +28,12 @@
   
     <tr>
       <td>Output total</td>
-      <td>TODO</td>
+      <td><%= @output["totals"]["output"] %> NMC</td>
     </tr>
   
     <tr>
       <td>Input total</td>
-      <td>TODO</td>
+      <td><%= @output["totals"]["input"] %> NMC</td>
     </tr>
   
     <tr>
@@ -56,33 +56,61 @@
       <td><%= @output["merkleroot"] %></td>
     </tr>
   </table>
-  
-  <h2>Name operations</h2>
-  <table>
-    <tr>
-      <th>Transaction</th>
-      <th>Operation</th>
-      <th>Name</th>
-      <th>Value</th>
-    </tr>
-    <% @name_operations.each do |op| %>
+
+  <% if @name_operations.count > 0 %>  
+    <h2>Name operations</h2>
+    <table>
       <tr>
-        <td><a href="/tx/<%= op['txid'] %>"><%= op["txid"] %></a></td>
-        <td><%= op["op"] %></td>
-        <td><a href="/name/<%= op['name'] %>"><%= op["name"] %></a></td>
-        <td><%= op["value"] %></td>
+        <th>Transaction</th>
+        <th>Operation</th>
+        <th>Name</th>
+        <th>Value</th>
       </tr>
-    <% end %>
-  </table>
+      <% @name_operations.each do |op| %>
+        <tr>
+          <td><a href="/tx/<%= op['txid'] %>"><%= op["txid"] %></a></td>
+          <td><%= op["op"] %></td>
+          <td><a href="/name/<%= op['name'] %>"><%= op["name"] %></a></td>
+          <td><%= op["value"] %></td>
+        </tr>
+      <% end %>
+    </table>
+  <% end %>
   
   <h2>Transactions</h2>
-  <table>
-    <% @output["tx"].each do |tx| %>
+  <% @output["tx"].each do |tx| %>
+    <table>
       <tr>
-        <td><a href="/tx/<%= tx %>"><%= tx %></a></td>
+        <th>Transaction <a href="/tx/<%= tx['txid'] %>"><%= tx['txid'] %></a> <% if tx['totals']['input'] != 0 %>(Fee <%= tx['totals']['input'] - tx['totals']['output'] %> NMC)<% end %></th>
       </tr>
-    <% end %>
-  </table>
+      <tr>
+        <td>
+          <table>
+            <% tx["vin"].each do |vin| %>
+              <tr>
+                <% if vin["prevTransaction"] %>
+                  <td><a href="/address/<%= vin['prevTransaction']['vout'][vin['vout']]['scriptPubKey']['addresses'][0] %>"><%= vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0] %></a></td>
+                  <td><%= vin["prevTransaction"]["vout"][vin["vout"]]["value"] %> NMC</td>
+                <% else %>
+                  <td>No inputs (generated coins)</td>
+                <% end %>
+              </tr>
+            <% end %>
+          </table>
+        </td>
+        <td>
+          <table>
+            <% tx["vout"].each do |vout| %>
+              <tr>
+                <td><a href="/address/<%= vout['scriptPubKey']['addresses'][0] %>"><%= vout["scriptPubKey"]["addresses"][0] %></a></td>
+                <td><%= vout["value"] %> NMC</td>
+              </tr>
+            <% end %>
+          </table>
+        </td>
+      </tr>
+    </table>
+  <% end %>
 <% else %>
   <h1>Block not found</h1>
 <% end %>
