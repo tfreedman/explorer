@@ -1,0 +1,89 @@
+<h1>API</h1>
+
+<p>As an alternative to setting up a local copy of namecoind, we're happy to offer a remote API for public use. Linked commands have been fully implemented, unlinked commands are in progress, and crossed out entries are those we intentionally don't plan to support for security reasons.</p>
+<p>All command output is unmodified, straight from namecoind.</p>
+
+<h2>Blockchain</h2>
+<ul>
+  <li><a href="/api/getbestblockhash">getbestblockhash</a></li>
+  <li><a href="/api/getblock/fcf0f335554299f85b55853bfe0ee7900d36838649be7e18d08f9d089ff24743">getblock "hash" ( verbose )</a></li>
+  <li><a href="/api/getblockchaininfo"">getblockchaininfo</a></li>
+  <li><a href="/api/getblockcount">getblockcount</a></li>
+  <li><a href="/api/getblockhash/300000">getblockhash index</a></li>
+  <li><a href="/api/getblockheader/fcf0f335554299f85b55853bfe0ee7900d36838649be7e18d08f9d089ff24743">getblockheader "hash" ( verbose )</a></li>
+  <li><a href="/api/getchaintips">getchaintips</a></li>
+  <li><a href="/api/getdifficulty">getdifficulty</a></li>
+  <li><a href="/api/getmempoolancestors/c02881d4978f561639158341865e91d6f59d08ab17858adc85f9da12edff826c">getmempoolancestors txid (verbose)</a></li>
+  <li><a href="/api/getmempooldescendants/c02881d4978f561639158341865e91d6f59d08ab17858adc85f9da12edff826c">getmempooldescendants txid (verbose)</a></li>
+  <li><a href="/api/getmempoolentry/c02881d4978f561639158341865e91d6f59d08ab17858adc85f9da12edff826c">getmempoolentry txid</a></li>
+  <li><a href="/api/getmempoolinfo">getmempoolinfo</a></li>
+  <li><a href="/api/getrawmempool">getrawmempool ( verbose )</a></li>
+  <li>gettxout "txid" n ( includemempool )</li>
+  <li>gettxoutproof ["txid",...] ( blockhash )</li>
+  <li><a href="/api/gettxoutsetinfo">gettxoutsetinfo</a></li>
+  <li>verifychain ( checklevel numblocks )</li>
+  <li>verifytxoutproof "proof"</li>
+</ul>
+
+<h2>Control</h2>
+<ul>
+  <li><a href="/api/getinfo">getinfo</a></li>
+  <li>help ( "command" )</li>
+  <li><del>stop</del></li>
+</ul>
+
+<h2>Generating</h2>
+<ul>
+  <li>generate numblocks ( maxtries )</li>
+  <li>generatetoaddress numblocks address (maxtries)</li>
+</ul>
+
+<h2>Mining</h2>
+<ul>
+  <li>getauxblock (hash auxpow)</li>
+  <li><a href="/api/getmininginfo">getmininginfo</a></li>
+  <li>getnetworkhashps ( blocks height )</li>
+  <li><del>prioritisetransaction <txid> <priority delta> <fee delta></del></li>
+  <li>submitblock "hexdata" ( "jsonparametersobject" )</li>
+</ul>
+
+<h2>Namecoin</h2>
+<ul>
+  <li><del>name_checkdb</del></li>
+  <li>name_filter ("regexp" ("maxage" ("from" ("nb" ("stat")))))</li>
+  <li><del>name_firstupdate "name" "rand" "tx" "value" ("toaddress")</del></li>
+  <li><a href="/api/name_history/d/jeremy">name_history "name"</a></li>
+  <li><del>name_list ("name")</del></li>
+  <li><del>name_new "name"</del></li>
+  <li><a href="/api/name_pending">name_pending ("name")</a></li>
+  <li>name_scan ("start" ("count"))</li>
+  <li><a href="/api/name_show/d/jeremy">name_show "name"</a></li>
+  <li><del>name_update "name" "value" ("toaddress")</del></li>
+  <li><del>sendtoname "name" amount ( "comment" "comment-to" subtractfeefromamount )</del></li>
+</ul>
+
+<h2>Network</h2>
+<ul>
+  <li><del>addnode "node" "add|remove|onetry"</del></li>
+  <li><del>clearbanned</del></li>
+  <li><del>disconnectnode "node"</del></li>
+  <li>getaddednodeinfo dummy ( "node" )</li>
+  <li><a href="/api/getconnectioncount">getconnectioncount</a></li>
+  <li><a href="/api/getnettotals">getnettotals</a></li>
+  <li><a href="/api/getnetworkinfo">getnetworkinfo</a></li>
+  <li><a href="/api/getpeerinfo">getpeerinfo</a></li>
+  <li><a href="/api/listbanned">listbanned</a></li>
+  <li><a href="/api/ping">ping</a></li>
+  <li><del>setban "ip(/netmask)" "add|remove" (bantime) (absolute)</del></li>
+</ul>
+
+<h2>Raw Transactions</h2>
+<ul>
+  <li>createrawtransaction [{"txid":"id","vout":n},...] {"address":amount,"data":"hex",...} (name operation) (locktime)</li>
+  <li>decoderawtransaction "hexstring"</li>
+  <li>decodescript "hex"</li>
+  <li>fundrawtransaction "hexstring" ( options )</li>
+  <li>getrawtransaction "txid" ( verbose )</li>
+  <li>sendrawtransaction "hexstring" ( allowhighfees )</li>
+  <li>signrawtransaction "hexstring" ( [{"txid":"id","vout":n,"scriptPubKey":"hex","redeemScript":"hex"},...] ["privatekey1",...] sighashtype )</li>
+</ul>
