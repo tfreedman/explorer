@@ -1,23 +1,146 @@
-body {margin: 0}
+* {box-sizing: border-box}
+
+/* latin-ext */
+@font-face {
+  font-family: 'Dosis';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Dosis Regular'), local('Dosis-Regular'), url(https://fonts.gstatic.com/s/dosis/v7/HhyaU5sn9vOmLzlmC_WoEoZKdbA.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Dosis';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Dosis Regular'), local('Dosis-Regular'), url(https://fonts.gstatic.com/s/dosis/v7/HhyaU5sn9vOmLzloC_WoEoZK.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Dosis';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Dosis Bold'), local('Dosis-Bold'), url(https://fonts.gstatic.com/s/dosis/v7/HhyXU5sn9vOmLzHTLuCLMItgT7kJx_E.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Dosis';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Dosis Bold'), local('Dosis-Bold'), url(https://fonts.gstatic.com/s/dosis/v7/HhyXU5sn9vOmLzHTLuCFMItgT7kJ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+body {
+  margin: 0;
+  font-family: 'Dosis', sans-serif;
+  color: #052443;
+  background: rgba(5, 36, 67, 1);
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSIxMDAiPgo8cmVjdCB3aWR0aD0iNTYiIGhlaWdodD0iMTAwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAiPjwvcmVjdD4KPHBhdGggZD0iTTI4IDY2TDAgNTBMMCAxNkwyOCAwTDU2IDE2TDU2IDUwTDI4IDY2TDI4IDEwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDkxOTNiIiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPHBhdGggZD0iTTI4IDBMMjggMzRMMCA1MEwwIDg0TDI4IDEwMEw1NiA4NEw1NiA1MEwyOCAzNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDkxOTNiIiBzdHJva2Utd2lkdGg9IjIiPjwvcGF0aD4KPC9zdmc+");
+}
+
+header {
+  background-color: #22cdd5;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSIxMDAiPgo8cmVjdCB3aWR0aD0iNTYiIGhlaWdodD0iMTAwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAiPjwvcmVjdD4KPHBhdGggZD0iTTI4IDY2TDAgNTBMMCAxNkwyOCAwTDU2IDE2TDU2IDUwTDI4IDY2TDI4IDEwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjFjM2NjIiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPHBhdGggZD0iTTI4IDBMMjggMzRMMCA1MEwwIDg0TDI4IDEwMEw1NiA4NEw1NiA1MEwyOCAzNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjFjM2NjIiBzdHJva2Utd2lkdGg9IjIiPjwvcGF0aD4KPC9zdmc+");
+  height: 55vh;
+  padding: 5px 0;
+  box-shadow: 0 4px 9px 0 rgba(23,28,33,.16);
+  clip-path: polygon(0% 0%, 0% 100%, 100% 75%, 100% 0%);
+
+  nav {
+    max-width: 1100px;
+    margin: 20px auto 0;
+    align-items: center;
+    display: flex;
+
+    h1 {
+      margin: 0;
+      span {font-weight: normal}
+    }
+
+    a {
+      text-decoration: none;
+      padding-left: 10px;
+      color: #052443;
+    }
+
+    form {
+      flex-grow: 5;
+      vertical-align: middle;
+
+      input {float: right}
+      button {display: none}
+    }
+  }
+}
 
 article {
-  max-width: 900px;
-  margin: 0 auto;
-  margin-bottom: 150px;
+  max-width: 1100px;
+  padding: 50px;
+  margin: calc(-55vh + 200px) auto 40px;
   word-wrap: break-word;
+  box-shadow: 0 4px 9px 0 rgba(23,28,33,.06);
+  background: #FFF;
+  border-radius: 5px;
+  position: relative;
+  z-index: 2;
 
-  .flex-container {display: flex}
-  .half {flex-grow: 1; max-width: 450px}
+  h1 {margin: 0 0 40px}
+  h2 {padding: 0; line-height: 0; margin: 0 0 1em}
+  .flex-container {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  .half {
+    flex-grow: 1;
+    max-width: 50%;
+    pre {padding-left: 20px}
+
+  & + .half {padding-left: 20px}
+  }
+  .full {width: 100%}
+  & > table {margin-bottom: 50px}
+  & > table:last-child {margin-bottom: 0}
+
+  .coinmarketcap-currency-widget {
+    & > div {border: none !important}
+  }
+
+  table {
+    border-collapse: collapse;
+    line-height: 1.5em;
+    width: 100%;
+  
+    td {padding-left: 5px; word-break: break-all}
+    tr td:first-child {font-weight: bold}
+    tr:nth-child(even) {background-color: #f9f9f9}
+    th {text-align: left}
+  }
 }
-
-header {max-width: 900px; margin: 0 auto}
 
 footer {
-  max-width: 900px;
-  text-align: right;
+  max-width: 1100px;
   margin: 0 auto;
-  height: 150px;
-  bottom: 0;
-  width: 100%;
+  text-align: right;
+  padding-bottom: 150px;
+
+  a {
+    color: #22cdd5;
+    padding: 0 10px
+  }
 }
 
+a {color: #22cdd5}
+.cf {text-align: center}
+
+select, input {
+  font-family: 'Dosis', sans-serif;
+  border-radius: 5px;
+  padding: 7px;
+  margin: 3px;
+  min-width: 300px;
+  font-size: 20px;
+  border: none;
+}
