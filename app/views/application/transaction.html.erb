@@ -78,10 +78,7 @@
             <td><a href="/name/<%= vout['scriptPubKey']['nameOp']['name'] %>"><%= vout["scriptPubKey"]["nameOp"]["name"] %></a></td>
           </tr>
         </table>
-        <pre>
-          <code>
-            <%= vout["scriptPubKey"]["nameOp"]["value"] %>
-          </code>
+        <pre><% begin %><%= raw CodeRay.scan(JSON.pretty_generate(JSON.parse(vout["scriptPubKey"]["nameOp"]["value"])), :json).html(:css => :style) %><% rescue %><%= vout["scriptPubKey"]["nameOp"]["value"] %><% end %>
         </pre>
       <% end %>
     <% end %>

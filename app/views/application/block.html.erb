@@ -71,7 +71,7 @@
           <td><a href="/tx/<%= op['txid'] %>"><%= op["txid"] %></a></td>
           <td><%= op["op"] %></td>
           <td><a href="/name/<%= op['name'] %>"><%= op["name"] %></a></td>
-          <td><%= op["value"] %></td>
+          <td><pre><% if !op["value"].blank? %><%= op["value"][0..10] %>...<% end %></pre></td>
         </tr>
       <% end %>
     </table>
@@ -81,7 +81,7 @@
   <% @output["tx"].each do |tx| %>
     <table>
       <tr>
-        <th>Transaction <a href="/tx/<%= tx['txid'] %>"><%= tx['txid'] %></a> <% if tx['totals']['input'] != 0 %>(Fee <%= tx['totals']['input'] - tx['totals']['output'] %> NMC)<% end %></th>
+        <th colspan="3">Transaction <a href="/tx/<%= tx['txid'] %>"><%= tx['txid'] %></a> <% if tx['totals']['input'] != 0 %>(Fee <%= tx['totals']['input'] - tx['totals']['output'] %> NMC)<% end %></th>
       </tr>
       <tr>
         <td>

@@ -1,7 +1,8 @@
 <div class="flex-container">
   <div class="half">
-    <h2>Welcome</h2>
-    <p>Some random text can go here</p>
+    <h2>Market data</h2>
+    <script type="text/javascript" src="https://files.coinmarketcap.com/static/widget/currency.js"></script>
+    <div class="coinmarketcap-currency-widget" data-currencyid="3" data-base="USD" data-secondary="BTC" data-ticker="true" data-rank="true" data-marketcap="true" data-volume="true" data-stats="USD" data-statsticker="true"></div>
   </div>
   
   <div class="half">
@@ -27,6 +28,7 @@
 
 <div class="full">
   <h2>Latest operations</h2>
+  <% if @latest_transactions.count > 0 %>
   <table>
     <tr>
       <th>Age</th>
@@ -40,11 +42,14 @@
       <tr>
         <td><%= distance_of_time_in_words(Time.now, Time.at(transaction["age"])) %></td>
         <td><a href="/block/<%= transaction['height'] %>"><%= transaction['height'] %></a></td>
-        <td><a href="/tx/<%= transaction['txid'] %>"><%= transaction["txid"] %></a></td>
+        <td><a href="/tx/<%= transaction['txid'] %>"><%= transaction["txid"][0..10] %>...</a></td>
         <td><%= transaction["operation"] %></td>
         <td><a href="/name/<%= transaction['name'] %>"><%= transaction["name"] %></a></td>
         <td><%= transaction["value"] %></td>
       </tr>
     <% end %>
   </table>
+  <% else %>
+    <p class="cf"><em>There haven't been any domain registrations or updates in the past few blocks</em></p>
+  <% end %>
 </div>

@@ -1,56 +1,57 @@
 <h1>Name <%= params[:name] %> <% if params[:type].downcase == 'd' %> (<%= params[:name] %>.bit)<% end %></h1>
 
-<div class="flex-container">
-  <div class="half">
-    <h2>Summary</h2>
-    <table>
-      <tr>
-        <td>Status</td>
-        <td><%= @output["expired"] == false ? 'active' : 'expired' %></td>
-      </tr>
-      <tr>
-        <td>Expires after block</td>
-        <td><%= @output["expires_in"] %></td>
-      </tr>
-      <tr>
-        <td>Last update</td>
-        <td><a href="/block/<%= @output['height'] %>"><%= @output["height"] %></a></td>
-      </tr>
-      <tr>
-        <td>Registered since</td>
-        <td><a href="/block/<%= @history.last['height'] %>"><%= @history.last['height'] %></a></td>
-      </tr>
-    </table>
+<% if @output %>
+  <div class="flex-container">
+    <div class="half">
+      <h2>Summary</h2>
+      <table>
+        <tr>
+          <td>Status</td>
+          <td><%= @output["expired"] == false ? 'active' : 'expired' %></td>
+        </tr>
+        <tr>
+          <td>Expires after block</td>
+          <td><%= @output["expires_in"] %></td>
+        </tr>
+        <tr>
+          <td>Last update</td>
+          <td><a href="/block/<%= @output['height'] %>"><%= @output["height"] %></a></td>
+        </tr>
+        <tr>
+          <td>Registered since</td>
+          <td><a href="/block/<%= @history.last['height'] %>"><%= @history.last['height'] %></a></td>
+        </tr>
+      </table>
+    </div>
+    
+    <div class="half">
+    <pre><% begin %><%= raw CodeRay.scan(JSON.pretty_generate(JSON.parse(@output["value"])), :json).html(:css => :style) %><% rescue %><%= @output["value"] %><% end %></pre>
+    </div>
   </div>
   
-  <div class="half">
-    <h2>Current value</h2>
-    <code>
-      <%= @output["value"] %>
-    </code>
-  </div>
-</div>
-
-<div class="flex-container">
-  <div class="full">
-    <h2>Operations</h2>
-    <table>
-      <tr>
-        <th>Date/time</th>
-        <th>Block</th>
-        <th>Transaction</th>
-        <th>Operation</th>
-        <th>Value</th>
-      </tr>
-      <% @history.each do |tx| %>
+  <div class="flex-container">
+    <div class="full">
+      <h2>Operations</h2>
+      <table>
         <tr>
-          <td><%= Time.at(tx["time"]) %></td>
-          <td><a href="/block/<%= tx['height'] %>"><%= tx["height"] %></a></td>
-          <td><a href="/tx/<%= tx['txid'] %>"><%= tx["txid"] %></a></td>
-          <td><%= tx['op'] %></td>
-          <td><%= tx["value"] %></td>
+          <th>Date/time</th>
+          <th>Block</th>
+          <th>Transaction</th>
+          <th>Operation</th>
+          <th>Value</th>
         </tr>
-      <% end %>
-    </table>
+        <% @history.each do |tx| %>
+          <tr>
+            <td><%= Time.at(tx["time"]) %></td>
+            <td><a href="/block/<%= tx['height'] %>"><%= tx["height"] %></a></td>
+            <td><a href="/tx/<%= tx['txid'] %>"><%= tx["txid"][0..10] %>...</a></td>
+            <td><%= tx['op'] %></td>
+            <td><pre><% begin %><%= raw CodeRay.scan(JSON.pretty_generate(JSON.parse(tx["value"])), :json).html(:css => :style) %><% rescue %><%= tx["value"] %><% end %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
   </div>
-</div>
+<% else %>
+  <p class="cf"><em><%= params[:name] %><% if params[:type].downcase == 'd' %> (<%= params[:name] %>.bit)<% end %> is available. <a href="https://registrar.cyphrs.com/<%= params[:type] %>/<%= params[:name] %>">Click here to register it for free.</a></em></p>
+<% end %>
