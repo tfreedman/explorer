@@ -129,7 +129,7 @@ class ApplicationController < ActionController::Base
 
   def self.namecoin_cli(command)
     require 'open3'
-    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['NAMECOIN_RPC_USER'], 'rpcpassword' => ENV['NAMECOIN_RPC_PASSWORD']}, ENV['NAMECOIN_CLI'], *command)
+    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['NAMECOIN_RPC_USER'], 'rpcpassword' => ENV['NAMECOIN_RPC_PASSWORD'], 'rpcport' => ENV['NAMECOIN_RPC_PORT']}, ENV['NAMECOIN_CLI'], *command)
     return stdout_and_stderr_str
   end
 
