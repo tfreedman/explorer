@@ -26,30 +26,32 @@
   </div>
 </div>
 
-<div class="full">
-  <h2>Latest operations</h2>
-  <% if @latest_transactions.count > 0 %>
-  <table>
-    <tr>
-      <th>Age</th>
-      <th>Block</th>
-      <th>Transaction</th>
-      <th>Operation</th>
-      <th>Name</th>
-      <th>Value</th>
-    </tr>
-    <% @latest_transactions.each do |transaction| %>
+<% if ENV['COIN_NAME'] == 'Namecoin' %>
+  <div class="full">
+    <h2>Latest operations</h2>
+    <% if @latest_transactions.count > 0 %>
+    <table>
       <tr>
-        <td><%= distance_of_time_in_words(Time.now, Time.at(transaction["age"])) %></td>
-        <td><a href="/block/<%= transaction['height'] %>"><%= transaction['height'] %></a></td>
-        <td><a href="/tx/<%= transaction['txid'] %>"><%= transaction["txid"][0..10] %>...</a></td>
-        <td><%= transaction["operation"] %></td>
-        <td><a href="/name/<%= transaction['name'] %>"><%= transaction["name"] %></a></td>
-        <td><%= transaction["value"] %></td>
+        <th>Age</th>
+        <th>Block</th>
+        <th>Transaction</th>
+        <th>Operation</th>
+        <th>Name</th>
+        <th>Value</th>
       </tr>
+      <% @latest_transactions.each do |transaction| %>
+        <tr>
+          <td><%= distance_of_time_in_words(Time.now, Time.at(transaction["age"])) %></td>
+          <td><a href="/block/<%= transaction['height'] %>"><%= transaction['height'] %></a></td>
+          <td><a href="/tx/<%= transaction['txid'] %>"><%= transaction["txid"][0..10] %>...</a></td>
+          <td><%= transaction["operation"] %></td>
+          <td><a href="/name/<%= transaction['name'] %>"><%= transaction["name"] %></a></td>
+          <td><%= transaction["value"] %></td>
+        </tr>
+      <% end %>
+    </table>
+    <% else %>
+      <p class="cf"><em>There haven't been any domain registrations or updates in the past few blocks</em></p>
     <% end %>
-  </table>
-  <% else %>
-    <p class="cf"><em>There haven't been any domain registrations or updates in the past few blocks</em></p>
-  <% end %>
-</div>
+  </div>
+<% end %>

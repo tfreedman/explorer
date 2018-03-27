@@ -1,7 +1,7 @@
 <h1>API</h1>
 
-<p>As an alternative to setting up a local copy of namecoind, we're happy to offer a remote API for public use. Linked commands have been fully implemented, unlinked commands are in progress, and crossed out entries are those we intentionally don't plan to support for security reasons.</p>
-<p>All command output is unmodified, straight from namecoind.</p>
+<p>As an alternative to setting up a local copy of <%= ENV['DAEMON_NAME'] %>, we're happy to offer a remote API for public use. Linked commands have been fully implemented, unlinked commands are in progress, and crossed out entries are those we intentionally don't plan to support for security reasons.</p>
+<p>All command output is unmodified, straight from <%= ENV['DAEMON_NAME'] %>.</p>
 
 <h2>Blockchain</h2>
 <ul>
@@ -47,20 +47,22 @@
   <li>submitblock "hexdata" ( "jsonparametersobject" )</li>
 </ul>
 
-<h2>Namecoin</h2>
-<ul>
-  <li><del>name_checkdb</del></li>
-  <li>name_filter ("regexp" ("maxage" ("from" ("nb" ("stat")))))</li>
-  <li><del>name_firstupdate "name" "rand" "tx" "value" ("toaddress")</del></li>
-  <li><a href="/api/name_history/d/jeremy">name_history "name"</a></li>
-  <li><del>name_list ("name")</del></li>
-  <li><del>name_new "name"</del></li>
-  <li><a href="/api/name_pending">name_pending ("name")</a></li>
-  <li>name_scan ("start" ("count"))</li>
-  <li><a href="/api/name_show/d/jeremy">name_show "name"</a></li>
-  <li><del>name_update "name" "value" ("toaddress")</del></li>
-  <li><del>sendtoname "name" amount ( "comment" "comment-to" subtractfeefromamount )</del></li>
-</ul>
+<% if ENV['COIN_NAME'] == 'Namecoin' %>
+  <h2>Namecoin</h2>
+  <ul>
+    <li><del>name_checkdb</del></li>
+    <li>name_filter ("regexp" ("maxage" ("from" ("nb" ("stat")))))</li>
+    <li><del>name_firstupdate "name" "rand" "tx" "value" ("toaddress")</del></li>
+    <li><a href="/api/name_history/d/jeremy">name_history "name"</a></li>
+    <li><del>name_list ("name")</del></li>
+    <li><del>name_new "name"</del></li>
+    <li><a href="/api/name_pending">name_pending ("name")</a></li>
+    <li>name_scan ("start" ("count"))</li>
+    <li><a href="/api/name_show/d/jeremy">name_show "name"</a></li>
+    <li><del>name_update "name" "value" ("toaddress")</del></li>
+    <li><del>sendtoname "name" amount ( "comment" "comment-to" subtractfeefromamount )</del></li>
+  </ul>
+<% end %>
 
 <h2>Network</h2>
 <ul>

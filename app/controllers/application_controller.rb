@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
 
   def home
     @title = 'Home'
-    @output = ApplicationController::namecoin_cli('getinfo')
+    @output = ApplicationController::cli('getinfo')
     @output = JSON.parse(@output)
   
     @latest_blocks = Array.new
@@ -20,7 +20,7 @@ class ApplicationController < ActionController::Base
       block["total_sent"] = total_sent
       @latest_blocks << block
     end
-    @latest_transactions = JSON.parse(ApplicationController::namecoin_cli(['name_filter', '^[i]?d/', '6']))
+    @latest_transactions = JSON.parse(ApplicationController::cli(['name_filter', '^[i]?d/', '6']))
     @latest_transactions.each_with_index do |tx, index|
       @latest_transactions[index]["age"] = get_block(@latest_transactions[index]["height"])["time"]
       details = get_transaction(@latest_transactions[index]["txid"])
@@ -64,13 +64,15 @@ class ApplicationController < ActionController::Base
     @output = get_block(params[:block])
 
     @name_operations = Array.new
-    txids = @output["tx"]
-    txids.each do |txid|
-      details = get_transaction(txid)
-      details["vout"].each do |vout|
-        if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"]
-          @name_operations << vout["scriptPubKey"]["nameOp"]
-          @name_operations[-1]["txid"] = txid
+    if ENV['COIN_NAME'] == 'Namecoin'
+      txids = @output["tx"]
+      txids.each do |txid|
+        details = get_transaction(txid)
+        details["vout"].each do |vout|
+          if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"]
+            @name_operations << vout["scriptPubKey"]["nameOp"]
+            @name_operations[-1]["txid"] = txid
+          end
         end
       end
     end
@@ -99,11 +101,11 @@ class ApplicationController < ActionController::Base
     params[:type] = params[:type].downcase
     params[:name] = params[:name].downcase
     if params[:type] == 'd'
-      @output = ApplicationController::namecoin_cli(['name_show', 'd/' + params[:name]])
-      @history = ApplicationController::namecoin_cli(['name_history', 'd/' + params[:name]])
+      @output = ApplicationController::cli(['name_show', 'd/' + params[:name]])
+      @history = ApplicationController::cli(['name_history', 'd/' + params[:name]])
     elsif params[:type] == 'id'
-      @output = ApplicationController::namecoin_cli(['name_show', 'id/' + params[:name]])
-      @history = ApplicationController::namecoin_cli(['name_history', 'id/' + params[:name]])
+      @output = ApplicationController::cli(['name_show', 'id/' + params[:name]])
+      @history = ApplicationController::cli(['name_history', 'id/' + params[:name]])
     end
       
     if !@output.include?('name not found')
@@ -127,14 +129,14 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def self.namecoin_cli(command)
+  def self.cli(command)
     require 'open3'
-    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['NAMECOIN_RPC_USER'], 'rpcpassword' => ENV['NAMECOIN_RPC_PASSWORD'], 'rpcport' => ENV['NAMECOIN_RPC_PORT']}, ENV['NAMECOIN_CLI'], *command)
+    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['RPC_USER'], 'rpcpassword' => ENV['RPC_PASSWORD'], 'rpcport' => ENV['RPC_PORT']}, ENV['CLI'], *command)
     return stdout_and_stderr_str
   end
 
   def get_transaction(txid, include_input_transactions = false, include_totals = false)
-    output = JSON.parse(ApplicationController::namecoin_cli(["getrawtransaction", txid, '1']))
+    output = JSON.parse(ApplicationController::cli(["getrawtransaction", txid, '1']))
     if include_input_transactions
       output["vin"].each_with_index do |vin, index|
         if vin["txid"]
@@ -158,10 +160,10 @@ class ApplicationController < ActionController::Base
 
   def get_block(block)
     if block.to_s.count('a-fA-F') > 0
-      JSON.parse(ApplicationController::namecoin_cli(['getblock', block]))
+      JSON.parse(ApplicationController::cli(['getblock', block]))
     else
-      hash = ApplicationController::namecoin_cli(['getblockhash', block.to_s])
-      JSON.parse(ApplicationController::namecoin_cli(['getblock', hash]) 
+      hash = ApplicationController::cli(['getblockhash', block.to_s])
+      JSON.parse(ApplicationController::cli(['getblock', hash]) 
       )
     end
   end
@@ -169,106 +171,106 @@ class ApplicationController < ActionController::Base
   # API Routes start here
 
   def api_getbestblockhash
-    render plain: ApplicationController::namecoin_cli('getbestblockhash')
+    render plain: ApplicationController::cli('getbestblockhash')
   end
 
   def api_getblockchaininfo
-    render json: ApplicationController::namecoin_cli('getblockchaininfo')
+    render json: ApplicationController::cli('getblockchaininfo')
   end
 
   def api_getblockcount
-    render plain: ApplicationController::namecoin_cli('getblockcount')
+    render plain: ApplicationController::cli('getblockcount')
   end
 
   def api_getdifficulty
-    render plain: ApplicationController::namecoin_cli('getdifficulty')
+    render plain: ApplicationController::cli('getdifficulty')
   end
 
   def api_getmempoolinfo
-    render json: ApplicationController::namecoin_cli('getmempoolinfo')
+    render json: ApplicationController::cli('getmempoolinfo')
   end
 
   def api_getinfo
-    render json: ApplicationController::namecoin_cli('getinfo')
+    render json: ApplicationController::cli('getinfo')
   end
 
   def api_getmininginfo
-    render json: ApplicationController::namecoin_cli('getmininginfo')
+    render json: ApplicationController::cli('getmininginfo')
   end
 
   def api_ping
-    render json: ApplicationController::namecoin_cli('ping')
+    render json: ApplicationController::cli('ping')
   end
 
   def api_listbanned
-    render json: ApplicationController::namecoin_cli('listbanned')
+    render json: ApplicationController::cli('listbanned')
   end
 
   def api_getpeerinfo
-    render json: ApplicationController::namecoin_cli('getpeerinfo')
+    render json: ApplicationController::cli('getpeerinfo')
   end
 
   def api_getnetworkinfo
-    render json: ApplicationController::namecoin_cli('getnetworkinfo')
+    render json: ApplicationController::cli('getnetworkinfo')
   end
 
   def api_getchaintips
-    render json: ApplicationController::namecoin_cli('getchaintips')
+    render json: ApplicationController::cli('getchaintips')
   end
 
   def api_getnettotals
-    render json: ApplicationController::namecoin_cli('getnettotals')
+    render json: ApplicationController::cli('getnettotals')
   end
 
   def api_getconnectioncount
-    render json: ApplicationController::namecoin_cli('getconnectioncount')
+    render json: ApplicationController::cli('getconnectioncount')
   end
 
   def api_gettxoutsetinfo
-    render json: ApplicationController::namecoin_cli('gettxoutsetinfo')
+    render json: ApplicationController::cli('gettxoutsetinfo')
   end
 
   def api_getblockhash
-    render plain: ApplicationController::namecoin_cli(['getblockhash', params[:index].to_s])
+    render plain: ApplicationController::cli(['getblockhash', params[:index].to_s])
   end
 
   def api_getblock
-    render json: ApplicationController::namecoin_cli(['getblock', params[:hash]])
+    render json: ApplicationController::cli(['getblock', params[:hash]])
   end
 
   def api_getblockheader
-    render json: ApplicationController::namecoin_cli(['getblockheader', params[:hash]])
+    render json: ApplicationController::cli(['getblockheader', params[:hash]])
   end
 
   def api_getmempoolancestors
-    render json: ApplicationController::namecoin_cli(['getmempoolancestors', params[:txid]])
+    render json: ApplicationController::cli(['getmempoolancestors', params[:txid]])
   end
 
   def api_getmempoolentry
-    render json: ApplicationController::namecoin_cli(['getmempoolentry', params[:txid]])
+    render json: ApplicationController::cli(['getmempoolentry', params[:txid]])
   end
 
   def api_getmempooldescendants
-    render json: ApplicationController::namecoin_cli(['getmempooldescendants', params[:txid]])
+    render json: ApplicationController::cli(['getmempooldescendants', params[:txid]])
   end
 
   def api_getrawmempool
-    render json: ApplicationController::namecoin_cli('getrawmempool')
+    render json: ApplicationController::cli('getrawmempool')
   end
 
   def api_namefilter
-#    render json: ApplicationController::namecoin_cli(['name_filter'])
+#    render json: ApplicationController::cli(['name_filter'])
   end
 
   def api_namehistory
-    render json: ApplicationController::namecoin_cli(['name_history', params[:name]])
+    render json: ApplicationController::cli(['name_history', params[:name]])
   end
 
   def api_namepending
-    render json: ApplicationController::namecoin_cli(['name_pending', params[:name].to_s])
+    render json: ApplicationController::cli(['name_pending', params[:name].to_s])
   end
 
   def api_nameshow
-    render json: ApplicationController::namecoin_cli(['name_show', params[:name]])
+    render json: ApplicationController::cli(['name_show', params[:name]])
   end
 end
