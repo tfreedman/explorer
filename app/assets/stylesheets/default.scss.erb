@@ -36,7 +36,7 @@
 body {
   margin: 0;
   font-family: 'Dosis', sans-serif;
-  color: #052443;
+  color: <%= ENV['TEXT_COLOR'] %>;
   background: <%= ENV['BACKGROUND_COLOR_BOTTOM'] %>;
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSIxMDAiPgo8cGF0aCBkPSJNMjggNjZMMCA1MEwwIDE2TDI4IDBMNTYgMTZMNTYgNTBMMjggNjZMMjggMTAwIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjMiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxIj48L3BhdGg+CjxwYXRoIGQ9Ik0yOCAwTDI4IDM0TDAgNTBMMCA4NEwyOCAxMDBMNTYgODRMNTYgNTBMMjggMzQiIGZpbGw9Im5vbmUiIG9wYWNpdHk9IjAuMyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjIiPjwvcGF0aD4KPC9zdmc+");
 }
@@ -63,7 +63,7 @@ header {
     a {
       text-decoration: none;
       padding-left: 10px;
-      color: #052443;
+      color: <%= ENV['TEXT_COLOR'] %>;
     }
 
     form {
@@ -127,12 +127,12 @@ footer {
   padding-bottom: 150px;
 
   a {
-    color: #22cdd5;
+    color: <%= ENV['TEXT_LINK_COLOR'] %>;
     padding: 0 10px
   }
 }
 
-a {color: #22cdd5}
+a {color: <%= ENV['TEXT_LINK_COLOR'] %>}
 .cf {text-align: center}
 
 select, input {
