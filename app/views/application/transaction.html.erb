@@ -9,7 +9,7 @@
         <tr>
           <% if vin["prevTransaction"] %>
             <td><a href="/address/<%= vin['prevTransaction']['vout'][vin['vout']]['scriptPubKey']['addresses'][0] %>"><%= vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0] %></a></td>
-            <td><%= vin["prevTransaction"]["vout"][vin["vout"]]["value"] %> NMC</td>
+            <td><%= vin["prevTransaction"]["vout"][vin["vout"]]["value"] %> <%= ENV['COIN_SYMBOL'] %></td>
           <% else %>
             <td>No inputs (generated coins)</td>        
           <% end %>
@@ -28,7 +28,7 @@
           <% vout["scriptPubKey"]["addresses"].each do |address| %>
             <td><a href="/address/<%= address %>"><%= address %></a></td>
           <% end %>
-          <td><%= vout["value"] %> NMC</td>
+          <td><%= vout["value"] %> <%= ENV['COIN_SYMBOL'] %></td>
         </tr>
       <% end %>
     </table>
@@ -49,16 +49,16 @@
       </tr>
       <tr>
         <td>Total inputs</td>
-        <td><%= @output["totals"]["input"] %> NMC (<%= pluralize(@output["vin"].count, 'script') %>)</td>
+        <td><%= @output["totals"]["input"] %> <%= ENV['COIN_SYMBOL'] %> (<%= pluralize(@output["vin"].count, 'script') %>)</td>
       </tr>
       <tr>
         <td>Total outputs</td>
-        <td><%= @output["totals"]["output"] %> NMC (<%= pluralize(@output["vout"].count, 'script') %>)</td>
+        <td><%= @output["totals"]["output"] %> <%= ENV['COIN_SYMBOL'] %> (<%= pluralize(@output["vout"].count, 'script') %>)</td>
       </tr>
       <% if @output["totals"]["input"] > 0 %>
       <tr>
         <td>Fees</td>
-        <td><%= @output["totals"]["input"] - @output["totals"]["output"] %> NMC</td>
+        <td><%= @output["totals"]["input"] - @output["totals"]["output"] %> <%= ENV['COIN_SYMBOL'] %></td>
       </tr>
       <% end %>
     </table>

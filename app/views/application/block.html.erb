@@ -28,12 +28,12 @@
   
     <tr>
       <td>Output total</td>
-      <td><%= @output["totals"]["output"] %> NMC</td>
+      <td><%= @output["totals"]["output"] %> <%= ENV['COIN_SYMBOL'] %></td>
     </tr>
   
     <tr>
       <td>Input total</td>
-      <td><%= @output["totals"]["input"] %> NMC</td>
+      <td><%= @output["totals"]["input"] %> <%= ENV['COIN_SYMBOL'] %></td>
     </tr>
   
     <tr>
@@ -81,7 +81,7 @@
   <% @output["tx"].each do |tx| %>
     <table>
       <tr>
-        <th colspan="3">Transaction <a href="/tx/<%= tx['txid'] %>"><%= tx['txid'] %></a> <% if tx['totals']['input'] != 0 %>(Fee <%= tx['totals']['input'] - tx['totals']['output'] %> NMC)<% end %></th>
+        <th colspan="3">Transaction <a href="/tx/<%= tx['txid'] %>"><%= tx['txid'] %></a> <% if tx['totals']['input'] != 0 %>(Fee <%= tx['totals']['input'] - tx['totals']['output'] %> <%= ENV['COIN_SYMBOL'] %>)<% end %></th>
       </tr>
       <tr>
         <td>
@@ -90,7 +90,7 @@
               <tr>
                 <% if vin["prevTransaction"] %>
                   <td><a href="/address/<%= vin['prevTransaction']['vout'][vin['vout']]['scriptPubKey']['addresses'][0] %>"><%= vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0] %></a></td>
-                  <td><%= vin["prevTransaction"]["vout"][vin["vout"]]["value"] %> NMC</td>
+                  <td><%= vin["prevTransaction"]["vout"][vin["vout"]]["value"] %> <%= ENV['COIN_SYMBOL'] %></td>
                 <% else %>
                   <td>No inputs (generated coins)</td>
                 <% end %>
@@ -103,7 +103,7 @@
             <% tx["vout"].each do |vout| %>
               <tr>
                 <td><a href="/address/<%= vout['scriptPubKey']['addresses'][0] %>"><%= vout["scriptPubKey"]["addresses"][0] %></a></td>
-                <td><%= vout["value"] %> NMC</td>
+                <td><%= vout["value"] %> <%= ENV['COIN_SYMBOL'] %></td>
               </tr>
             <% end %>
           </table>
