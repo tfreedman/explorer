@@ -2,7 +2,7 @@
   <div class="half">
     <h2>Market data</h2>
     <script type="text/javascript" src="https://files.coinmarketcap.com/static/widget/currency.js"></script>
-    <div class="coinmarketcap-currency-widget" data-currencyid="3" data-base="USD" data-secondary="BTC" data-ticker="true" data-rank="true" data-marketcap="true" data-volume="true" data-stats="USD" data-statsticker="true"></div>
+    <div class="coinmarketcap-currency-widget" data-currencyid="<%= ENV['COINMARKETCAP_CURRENCY_ID'] %>" data-base="USD" data-secondary="BTC" data-ticker="true" data-rank="true" data-marketcap="true" data-volume="true" data-stats="USD" data-statsticker="true"></div>
   </div>
   
   <div class="half">
