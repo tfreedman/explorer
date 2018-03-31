@@ -20,18 +20,20 @@ class ApplicationController < ActionController::Base
       block["total_sent"] = total_sent
       @latest_blocks << block
     end
-    @latest_transactions = JSON.parse(ApplicationController::cli(['name_filter', '^[i]?d/', '6']))
-    @latest_transactions.each_with_index do |tx, index|
-      @latest_transactions[index]["age"] = get_block(@latest_transactions[index]["height"])["time"]
-      details = get_transaction(@latest_transactions[index]["txid"])
-      details["vout"].each do |vout|
-        if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"] == @latest_transactions[index]["name"]
-          @latest_transactions[index]["operation"] = vout["scriptPubKey"]["nameOp"]["op"]
-          break
+    if ENV['COIN_NAME'] == 'Namecoin'
+      @latest_transactions = JSON.parse(ApplicationController::cli(['name_filter', '^[i]?d/', '6']))
+      @latest_transactions.each_with_index do |tx, index|
+        @latest_transactions[index]["age"] = get_block(@latest_transactions[index]["height"])["time"]
+        details = get_transaction(@latest_transactions[index]["txid"])
+        details["vout"].each do |vout|
+          if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"] == @latest_transactions[index]["name"]
+            @latest_transactions[index]["operation"] = vout["scriptPubKey"]["nameOp"]["op"]
+            break
+          end
         end
       end
+      @latest_transactions = @latest_transactions.sort_by {|k| k["age"]}.reverse
     end
-    @latest_transactions = @latest_transactions.sort_by {|k| k["age"]}.reverse
   end
 
   def api
