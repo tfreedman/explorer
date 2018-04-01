@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
     @latest_blocks = Array.new
     blocks = @output["blocks"] - 6
     @output["blocks"].downto(blocks).each do |n|
-      block = get_block(n)
+      block = ApplicationController::get_block(n)
       total_sent = 0
       block["tx"].each do |txid|
         transaction = get_transaction(txid)
@@ -23,7 +23,7 @@ class ApplicationController < ActionController::Base
     if ENV['COIN_NAME'] == 'Namecoin'
       @latest_transactions = JSON.parse(ApplicationController::cli(['name_filter', '^[i]?d/', '6']))
       @latest_transactions.each_with_index do |tx, index|
-        @latest_transactions[index]["age"] = get_block(@latest_transactions[index]["height"])["time"]
+        @latest_transactions[index]["age"] = ApplicationController::get_block(@latest_transactions[index]["height"])["time"]
         details = get_transaction(@latest_transactions[index]["txid"])
         details["vout"].each do |vout|
           if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"] == @latest_transactions[index]["name"]
@@ -63,7 +63,7 @@ class ApplicationController < ActionController::Base
 
   def block
     @title = "Block #{params[:block]}"
-    @output = get_block(params[:block])
+    @output = ApplicationController::get_block(params[:block])
 
     @name_operations = Array.new
     if ENV['COIN_NAME'] == 'Namecoin'
@@ -90,12 +90,27 @@ class ApplicationController < ActionController::Base
   def transaction
     @title = "Transaction #{params[:transaction]}"
     @output = get_transaction(params[:transaction], true, true)
-    @output["height"] = get_block(@output["blockhash"])["height"]
+    @output["height"] = ApplicationController::get_block(@output["blockhash"])["height"]
   end
 
   def address
-    #Come back to this later.
     @title = "Address #{params[:address]}"
+    @address = Address.where(address: params[:address])
+
+    if Block.where(ended: true).order('block desc').first != ApplicationController::cli('getblockcount').to_i
+      index_latest_blocks()
+    end
+
+    @complete_data = Block.where(ended: true).count == ApplicationController::cli('getblockcount').to_i
+
+    if @address
+      @balance = 0
+      @address.each do |a|
+        @balance += a.credit if a.credit
+        @balance -= a.debit if a.debit
+        a.balance = @balance
+      end
+    end
   end
 
   def name
@@ -115,7 +130,7 @@ class ApplicationController < ActionController::Base
       @history = JSON.parse(@history)
 
       @history.each_with_index do |transaction, index|
-        @history[index]["time"] = get_block(transaction["height"])["time"]
+        @history[index]["time"] = ApplicationController::get_block(transaction["height"])["time"]
         details = get_transaction(transaction["txid"])
         details["vout"].each do |vout|
           if vout["scriptPubKey"] && vout["scriptPubKey"]["nameOp"] && vout["scriptPubKey"]["nameOp"]["name"]
@@ -128,6 +143,46 @@ class ApplicationController < ActionController::Base
     else
       @output = nil
       @history = nil
+    end
+  end
+
+  def index_latest_blocks
+    old_logger = ActiveRecord::Base.logger
+    ActiveRecord::Base.logger = nil
+
+    total_blocks = ApplicationController::cli('getblockcount').to_i
+    first_block = Block.where(ended: true).order('block desc').first.block || 1
+
+    (first_block..total_blocks).each do |block|
+      if !Block.where(block: block, started: true, ended: true).first
+        begin
+          block_hash = ApplicationController::cli(['getblockhash', block.to_s])
+          b = Block.create(block: block, blockhash: block_hash, started: true)
+          txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
+
+          txids.each do |txid|
+            begin
+              tx = JSON.parse(ApplicationController::cli(["getrawtransaction", txid, '1']))
+            rescue
+              puts txid
+            end
+
+            tx["vin"].each do |vin|
+              if vin["prevTransaction"]
+                Address.create(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"])
+              end
+            end
+
+            tx["vout"].each do |vout|
+              Address.create(address: vout["scriptPubKey"]["addresses"][0], txid: tx['txid'], credit: vout["value"])
+            end
+          end
+
+          b.update(ended: true)
+        rescue Exception => e
+          puts "FAILED ON BLOCK #{block}"
+        end
+      end
     end
   end
 
@@ -160,7 +215,7 @@ class ApplicationController < ActionController::Base
     return output
   end
 
-  def get_block(block)
+  def self.get_block(block)
     if block.to_s.count('a-fA-F') > 0
       JSON.parse(ApplicationController::cli(['getblock', block]))
     else

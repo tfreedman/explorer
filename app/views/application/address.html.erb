@@ -1,23 +1,28 @@
 <h1>Address <%= params[:address] %></h1>
-<h2>Balance: TODO</h2>
+<h2>Balance: <%= @address.sum(:credit) - @address.sum(:debit) %> <%= ENV['COIN_SYMBOL'] %></h2>
+
 <table>
   <tr>
     <td>Transactions in</td>
-    <td></td>
+    <td><%= @address.where.not(credit: nil).count %></td>
   </tr>
   <tr>
     <td>Transactions out</td>
-    <td></td>
+    <td><%= @address.where.not(debit: nil).count %></td>
   </tr>
   <tr>
     <td>Total received</td>
-    <td></td>
+    <td><%= @address.sum(:credit) %></td>
   </tr>
   <tr>
     <td>Total sent</td>
-    <td></td>
+    <td><%= @address.sum(:debit) %></td>
   </tr>
 </table>
+
+<% if !@complete_data %>
+  <h3 class="cf">Warning: this page currently has incomplete data while address indexes are being built. Transactions may be missing.</h3>
+<% end %>
 
 <table>
   <tr>
@@ -28,13 +33,22 @@
     <th>Credit</th>
     <th>Balance</th>
   </tr>
-  <% 5.times do |transaction| %>
+  <% @address.each do |a| %>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td><%= a.date %></td>
+      <td><a href="/tx/<%= a.txid %>"><%= a.txid[0..10] %>...</a></td>
+      <td><a href="/block/<%= a.block %>"><%= a.block %></a></td>
+      <td>
+        <% if a.debit %>
+          <%= a.debit %> <%= ENV['COIN_SYMBOL'] %>
+        <% end %>
+      </td>
+      <td>
+        <% if a.credit %>
+          <%= a.credit %> <%= ENV['COIN_SYMBOL'] %>
+        <% end %>
+      </td>
+      <td><%= a.balance %> <%= ENV['COIN_SYMBOL'] %></td>
     </tr>
   <% end %>
 </table>
