@@ -151,7 +151,12 @@ class ApplicationController < ActionController::Base
     ActiveRecord::Base.logger = nil
 
     total_blocks = ApplicationController::cli('getblockcount').to_i
-    first_block = Block.where(ended: true).order('block desc').first.block || 1
+    first_block = Block.where(ended: true).order('block desc').first
+    if first_block
+      first_block = first_block.count
+    else
+      first_block = 1
+    end
 
     (first_block..total_blocks).each do |block|
       if !Block.where(block: block, started: true, ended: true).first
