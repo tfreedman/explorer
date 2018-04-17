@@ -153,7 +153,7 @@ class ApplicationController < ActionController::Base
     total_blocks = ApplicationController::cli('getblockcount').to_i
     first_block = Block.where(ended: true).order('block desc').first
     if first_block
-      first_block = first_block.count
+      first_block = first_block.block
     else
       first_block = 1
     end
