@@ -37,5 +37,7 @@ Rails.application.routes.draw do
   get '/api/name_pending/:name' => 'application#api_namepending', :constraints => { :name => /.*/ }
   get '/api/name_show/:name' => 'application#api_nameshow', :constraints => { :name => /.*/ }
 
+  get '/api/getrawtransaction/:txid' => 'application#api_getrawtransaction', :constraints => { :txid => /.*/ }
+
   get '/' => 'application#home'
 end

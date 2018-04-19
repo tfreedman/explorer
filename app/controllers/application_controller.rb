@@ -335,4 +335,8 @@ class ApplicationController < ActionController::Base
   def api_nameshow
     render json: ApplicationController::cli(['name_show', params[:name]])
   end
+
+  def api_getrawtransaction
+    render plain: ApplicationController::cli(['getrawtransaction', params[:txid]])
+  end
 end
