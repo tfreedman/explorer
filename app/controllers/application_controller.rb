@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
 
   def home
     @title = 'Home'
-    @output = ApplicationController::cli('getinfo')
+    @output = ApplicationController::cli('getblockchaininfo')
     @output = JSON.parse(@output)
   
     @latest_blocks = Array.new
