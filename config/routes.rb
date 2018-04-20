@@ -43,5 +43,8 @@ Rails.application.routes.draw do
   post '/api/decoderawtransaction' => 'application#api_decoderawtransaction'
   post '/api/decodescript' => 'application#api_decodescript'
 
+#  get '/api/utxo/:address' => 'application#api_utxo'
+  get '/api/gettransactionsbyaddress/:address' => 'application#api_gettransactionsbyaddress'
+
   get '/' => 'application#home'
 end

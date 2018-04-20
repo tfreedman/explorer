@@ -1,7 +1,7 @@
 <h1>API</h1>
 
 <p>As an alternative to setting up a local copy of <%= ENV['DAEMON_NAME'] %>, we're happy to offer a remote API for public use. Linked commands have been fully implemented, unlinked commands are in progress, and crossed out entries are those we intentionally don't plan to support for security reasons.</p>
-<p>All command output is unmodified, straight from <%= ENV['DAEMON_NAME'] %>.</p>
+<p>All command output is unmodified straight from <%= ENV['DAEMON_NAME'] %>, except for the commands under Custom.</p>
 
 <h2>Blockchain</h2>
 <ul>
@@ -21,7 +21,7 @@
   <li>gettxout "txid" n ( includemempool )</li>
   <li>gettxoutproof ["txid",...] ( blockhash )</li>
   <li><a href="/api/gettxoutsetinfo">gettxoutsetinfo</a></li>
-  <li>verifychain ( checklevel numblocks )</li>
+  <li><del>verifychain ( checklevel numblocks )</del></li>
   <li>verifytxoutproof "proof"</li>
 </ul>
 
@@ -98,4 +98,9 @@
     <li><a onclick="document.getElementById('sendrawtransaction').submit()">sendrawtransaction "hexstring" ( allowhighfees )</a></li>
   </form>
   <li>signrawtransaction "hexstring" ( [{"txid":"id","vout":n,"scriptPubKey":"hex","redeemScript":"hex"},...] ["privatekey1",...] sighashtype )</li>
+</ul>
+
+<h2>Custom</h2>
+<ul>
+  <li><a href="/api/gettransactionsbyaddress/N8zVvY2xGZRRRNv7rypVnUaePmjJizEo1G">gettransactionsbyaddress</a></li>
 </ul>

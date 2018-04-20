@@ -351,4 +351,13 @@ class ApplicationController < ActionController::Base
   def api_decodescript
     render json: ApplicationController::cli(['decodescript', params[:hex]])
   end
+
+  def api_gettransactionsbyaddress
+    transactions = []
+    Address.where(address: params[:address]).find_each do |a|
+      transactions << {txid: a.txid, debit: a.debit, credit: a.credit}
+    end
+
+    render json: transactions
+  end
 end
