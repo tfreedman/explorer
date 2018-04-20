@@ -39,5 +39,9 @@ Rails.application.routes.draw do
 
   get '/api/getrawtransaction/:txid' => 'application#api_getrawtransaction', :constraints => { :txid => /.*/ }
 
+  post '/api/sendrawtransaction' => 'application#api_sendrawtransaction'
+  post '/api/decoderawtransaction' => 'application#api_decoderawtransaction'
+  post '/api/decodescript' => 'application#api_decodescript'
+
   get '/' => 'application#home'
 end

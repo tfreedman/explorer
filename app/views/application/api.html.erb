@@ -82,10 +82,20 @@
 <h2>Raw Transactions</h2>
 <ul>
   <li>createrawtransaction [{"txid":"id","vout":n},...] {"address":amount,"data":"hex",...} (name operation) (locktime)</li>
-  <li>decoderawtransaction "hexstring"</li>
-  <li>decodescript "hex"</li>
+  <form id="decoderawtransaction" action="/api/decoderawtransaction" method="POST">
+    <input name="hexstring" type="hidden" value="0" />
+    <li><a onclick="document.getElementById('decoderawtransaction').submit()">decoderawtransaction "hexstring"</a></li>
+  </form>
+  <form id="decodescript" action="/api/decodescript" method="POST">
+    <input name="hex" type="hidden" value="0" />
+    <li><a onclick="document.getElementById('decodescript').submit()">decodescript "hex"</a></li>
+  </form>
   <li>fundrawtransaction "hexstring" ( options )</li>
   <li><a href="/api/getrawtransaction/3949dbab79d14da3a1842c8586f056f1d7e8df468016f15d2d9f2da733387022">getrawtransaction "txid" ( verbose )</a></li>
-  <li>sendrawtransaction "hexstring" ( allowhighfees )</li>
+  <form id="sendrawtransaction" action="/api/sendrawtransaction" method="POST">
+    <input name="hexstring" type="hidden" value="0" />
+    <input name="allowhighfees" type="hidden" value="0" />
+    <li><a onclick="document.getElementById('sendrawtransaction').submit()">sendrawtransaction "hexstring" ( allowhighfees )</a></li>
+  </form>
   <li>signrawtransaction "hexstring" ( [{"txid":"id","vout":n,"scriptPubKey":"hex","redeemScript":"hex"},...] ["privatekey1",...] sighashtype )</li>
 </ul>

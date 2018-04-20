@@ -132,7 +132,12 @@ footer {
   }
 }
 
-a {color: <%= ENV['TEXT_LINK_COLOR'] %>}
+a {
+  color: <%= ENV['TEXT_LINK_COLOR'] %>;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .cf {text-align: center}
 
 select, input {

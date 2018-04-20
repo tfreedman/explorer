@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::Base
-  protect_from_forgery with: :exception
+#  protect_from_forgery with: :exception
 
   def home
     @title = 'Home'
@@ -338,5 +338,17 @@ class ApplicationController < ActionController::Base
 
   def api_getrawtransaction
     render plain: ApplicationController::cli(['getrawtransaction', params[:txid]])
+  end
+
+  def api_sendrawtransaction
+    render plain: ApplicationController::cli(['sendrawtransaction', params[:hexstring], params[:allowhighfees]])
+  end
+
+  def api_decoderawtransaction
+    render json: ApplicationController::cli(['decoderawtransaction', params[:hexstring]])
+  end
+
+  def api_decodescript
+    render json: ApplicationController::cli(['decodescript', params[:hex]])
   end
 end
