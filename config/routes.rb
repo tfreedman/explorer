@@ -37,13 +37,14 @@ Rails.application.routes.draw do
   get '/api/name_pending/:name' => 'application#api_namepending', :constraints => { :name => /.*/ }
   get '/api/name_show/:name' => 'application#api_nameshow', :constraints => { :name => /.*/ }
 
-  get '/api/getrawtransaction/:txid' => 'application#api_getrawtransaction', :constraints => { :txid => /.*/ }
+  get '/api/getrawtransaction/:txid' => 'application#api_getrawtransaction'
+  get '/api/getrawtransaction/:txid/:verbose' => 'application#api_getrawtransaction'
 
   post '/api/sendrawtransaction' => 'application#api_sendrawtransaction'
   post '/api/decoderawtransaction' => 'application#api_decoderawtransaction'
   post '/api/decodescript' => 'application#api_decodescript'
 
-#  get '/api/utxo/:address' => 'application#api_utxo'
+  get '/api/utxo/:address' => 'application#api_utxo'
   get '/api/gettransactionsbyaddress/:address' => 'application#api_gettransactionsbyaddress'
 
   get '/' => 'application#home'

@@ -97,10 +97,6 @@ class ApplicationController < ActionController::Base
     @title = "Address #{params[:address]}"
     @address = Address.where(address: params[:address])
 
-    if Block.where(ended: true).order('block desc').first != ApplicationController::cli('getblockcount').to_i
-      index_latest_blocks()
-    end
-
     @complete_data = Block.where(ended: true).count == ApplicationController::cli('getblockcount').to_i
 
     if @address
@@ -146,47 +142,61 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def index_latest_blocks
+  def generate_address_index
     old_logger = ActiveRecord::Base.logger
     ActiveRecord::Base.logger = nil
 
     total_blocks = ApplicationController::cli('getblockcount').to_i
-    first_block = Block.where(ended: true).order('block desc').first
-    if first_block
-      first_block = first_block.block
-    else
-      first_block = 1
+
+    block_array = []    
+    (1..total_blocks).each do |block|
+      block_array << block if Block.where(block: block).first.nil?
     end
 
-    (first_block..total_blocks).each do |block|
-      if !Block.where(block: block, started: true, ended: true).first
-        begin
-          block_hash = ApplicationController::cli(['getblockhash', block.to_s])
-          b = Block.create(block: block, blockhash: block_hash, started: true)
-          txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
+    array_of_block_arrays = block_array.each_slice( (block_array.size/10.to_f).round ).to_a
 
-          txids.each do |txid|
-            begin
-              tx = JSON.parse(ApplicationController::cli(["getrawtransaction", txid, '1']))
-            rescue
-              puts txid
-            end
+    puts "Loading block index..."
 
-            tx["vin"].each do |vin|
-              if vin["prevTransaction"]
-                Address.create(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"])
-              end
-            end
+    10.times do |x|
+      Thread.new do
+        puts "Spawning worker thread #{x}"
+        array_of_block_arrays[x].each do |block|
+          index_block(block)
+        end
+      end
+    end
+  end
 
-            tx["vout"].each do |vout|
-              Address.create(address: vout["scriptPubKey"]["addresses"][0], txid: tx['txid'], credit: vout["value"])
+  def index_block(block)
+    if !Block.where(block: block, started: true, ended: true).first
+      begin
+        block_hash = ApplicationController::cli(['getblockhash', block.to_s])
+        b = Block.create(block: block, blockhash: block_hash, started: true)
+        txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
+
+        txids.each_with_index do |txid, index|
+          tx = get_transaction(txid, true, false)
+
+          tx["vin"].each do |vin|
+            if vin["prevTransaction"]
+              Address.create(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"], blockhash: block_hash)
             end
           end
 
-          b.update(ended: true)
-        rescue Exception => e
-          puts "FAILED ON BLOCK #{block}"
+          tx["vout"].each do |vout|
+            if vout["scriptPubKey"]["addresses"].nil?
+              output_address = nil
+            else
+              output_address = vout["scriptPubKey"]["addresses"][0]
+            end
+            Address.create(address: output_address, txid: tx['txid'], credit: vout["value"], blockhash: block_hash)
+          end
         end
+
+        b.update(ended: true)
+        puts block
+      rescue Exception => e
+        puts "FAILED ON BLOCK #{block} - #{e}"
       end
     end
   end
@@ -337,7 +347,8 @@ class ApplicationController < ActionController::Base
   end
 
   def api_getrawtransaction
-    render plain: ApplicationController::cli(['getrawtransaction', params[:txid]])
+    params[:verbose] = '0' if params[:verbose].nil?
+    render plain: ApplicationController::cli(['getrawtransaction', params[:txid], params[:verbose]])
   end
 
   def api_sendrawtransaction
