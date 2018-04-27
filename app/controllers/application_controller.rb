@@ -377,4 +377,52 @@ class ApplicationController < ActionController::Base
 
     render json: transactions
   end
+
+  def api_utxo
+    credits = []
+    debits = []
+    Payment.where(address: params[:address]).find_each do |a|
+      if a.debit.nil?
+        credits << {txid: a.txid, debit: a.debit, credit: a.credit}
+      elsif a.credit.nil?
+        debits << {txid: a.txid, debit: a.debit, credit: a.credit}
+      end
+    end
+
+    inputs = []
+    credits.each do |c|
+      JSON.parse(ApplicationController::cli(['getrawtransaction', c[:txid], '1']))["vout"].each do |vout|
+        vout["scriptPubKey"]["addresses"].each_with_index do |address, index|
+          if address == params[:address]
+            inputs << {vout: vout, txid: c[:txid]}
+            break
+          end
+        end
+      end
+    end
+
+    outputs = []
+    debits.each do |d|
+      JSON.parse(ApplicationController::cli(['getrawtransaction', d[:txid], '1']))["vin"].each do |vin|
+        inputs.each do |i|
+          if i[:txid] == vin["txid"] && i[:vout]["n"] == vin["vout"]
+            outputs << vin
+          end
+        end
+      end
+    end
+
+    unspent_outputs = []
+    inputs.each do |i|
+      was_spent = false
+      outputs.each do |o|
+        if o["txid"] == i[:txid] && o["vout"] == i[:vout]["n"]
+          was_spent = true
+        end
+      end
+      
+      unspent_outputs << i if !was_spent
+    end
+    render json: unspent_outputs.to_json
+  end
 end
