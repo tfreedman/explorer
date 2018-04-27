@@ -1,4 +1,4 @@
-class Address < ActiveRecord::Base
+class Payment < ActiveRecord::Base
   attr_accessor :balance
   def date
     Time.at(JSON.parse(ApplicationController::cli(["getrawtransaction", self.txid, '1']))["time"])

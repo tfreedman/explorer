@@ -95,7 +95,7 @@ class ApplicationController < ActionController::Base
 
   def address
     @title = "Address #{params[:address]}"
-    @address = Address.where(address: params[:address])
+    @address = Payment.where(address: params[:address])
 
     @complete_data = Block.where(ended: true).count == ApplicationController::cli('getblockcount').to_i
 
@@ -143,43 +143,48 @@ class ApplicationController < ActionController::Base
   end
 
   def generate_address_index
-    old_logger = ActiveRecord::Base.logger
-    ActiveRecord::Base.logger = nil
-
-    total_blocks = ApplicationController::cli('getblockcount').to_i
-
-    block_array = []    
-    (1..total_blocks).each do |block|
-      block_array << block if Block.where(block: block).first.nil?
-    end
-
-    array_of_block_arrays = block_array.each_slice( (block_array.size/10.to_f).round ).to_a
+    ActiveRecord::Base.logger.level = 2
 
     puts "Loading block index..."
+    total_blocks = ApplicationController::cli('getblockcount').to_i
 
-    10.times do |x|
-      Thread.new do
-        puts "Spawning worker thread #{x}"
-        array_of_block_arrays[x].each do |block|
-          index_block(block)
+    block_array = []
+
+    Block.where(ended: false).find_each do |block|
+        Payment.where(blockhash: block.blockhash).find_each do |payment|
+            payment.destroy
         end
-      end
+        block.destroy
+    end
+
+    (1..total_blocks).each do |block|
+      block_array << block if Block.where(height: block).first.nil?
+    end
+    puts "Indexing payments in #{block_array.count} blocks"
+
+    Parallel.map(block_array) do |block|
+      index_block(block)
     end
   end
 
-  def index_block(block)
-    if !Block.where(block: block, started: true, ended: true).first
-      begin
-        block_hash = ApplicationController::cli(['getblockhash', block.to_s])
-        b = Block.create(block: block, blockhash: block_hash, started: true)
-        txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
+  def index_block(height)
+    if !Block.where(height: height, started: true, ended: true).first
+      block_hash = ApplicationController::cli(['getblockhash', height.to_s])
+      b = Block.create(height: height, blockhash: block_hash, started: true)
+      txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
 
-        txids.each_with_index do |txid, index|
+      txids.each_with_index do |txid, index|
+        begin
           tx = get_transaction(txid, true, false)
 
           tx["vin"].each do |vin|
             if vin["prevTransaction"]
-              Address.create(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"], blockhash: block_hash)
+              if vin["coinbase"].nil?
+                vout = nil
+              else
+                vout = vin["vout"]
+              end
+              Payment.create(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"], blockhash: block_hash, n: vout)
             end
           end
 
@@ -189,15 +194,16 @@ class ApplicationController < ActionController::Base
             else
               output_address = vout["scriptPubKey"]["addresses"][0]
             end
-            Address.create(address: output_address, txid: tx['txid'], credit: vout["value"], blockhash: block_hash)
+            Payment.create(address: output_address, txid: tx['txid'], credit: vout["value"], blockhash: block_hash, n: vout["n"])
           end
+        rescue Exception => e
+          puts "FAILED ON TXID #{txid} - #{e}"
+          InvalidTransaction.create(transaction_id: txid)
         end
-
-        b.update(ended: true)
-        puts block
-      rescue Exception => e
-        puts "FAILED ON BLOCK #{block} - #{e}"
       end
+
+      b.update(ended: true)
+      puts height
     end
   end
 
@@ -365,7 +371,7 @@ class ApplicationController < ActionController::Base
 
   def api_gettransactionsbyaddress
     transactions = []
-    Address.where(address: params[:address]).find_each do |a|
+    Payment.where(address: params[:address]).find_each do |a|
       transactions << {txid: a.txid, debit: a.debit, credit: a.credit}
     end
 
