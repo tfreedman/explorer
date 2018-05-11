@@ -172,6 +172,9 @@ class ApplicationController < ActionController::Base
       block_hash = ApplicationController::cli(['getblockhash', height.to_s])
       b = Block.create(height: height, blockhash: block_hash, started: true)
       txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
+      
+      payments = []
+      invalid_transactions = []
 
       txids.each_with_index do |txid, index|
         begin
@@ -184,7 +187,7 @@ class ApplicationController < ActionController::Base
               else
                 vout = vin["vout"]
               end
-              Payment.create(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"], blockhash: block_hash, n: vout)
+              payments << Payment.new(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"], blockhash: block_hash, n: vout)
             end
           end
 
@@ -194,13 +197,16 @@ class ApplicationController < ActionController::Base
             else
               output_address = vout["scriptPubKey"]["addresses"][0]
             end
-            Payment.create(address: output_address, txid: tx['txid'], credit: vout["value"], blockhash: block_hash, n: vout["n"])
+            payments << Payment.new(address: output_address, txid: tx['txid'], credit: vout["value"], blockhash: block_hash, n: vout["n"])
           end
         rescue Exception => e
           puts "FAILED ON TXID #{txid} - #{e}"
-          InvalidTransaction.create(transaction_id: txid)
+          invalid_transactions << InvalidTransaction.new(transaction_id: txid)
         end
       end
+
+      Payment.import payments
+      InvalidTransaction.import invalid_transactions
 
       b.update(ended: true)
       puts height
