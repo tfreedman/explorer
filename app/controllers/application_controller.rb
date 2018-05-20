@@ -142,6 +142,11 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def tick
+    generate_address_index
+    render plain: 'okay'
+  end
+
   def generate_address_index
     ActiveRecord::Base.logger.level = 2
 
