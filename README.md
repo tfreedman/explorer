@@ -6,6 +6,37 @@ Unlike other block explorers that are also brand new nodes, this one performs al
 
 This explorer also includes explicit support for Namecoin, which is a fork of Bitcoin with the ability to store arbitrary data in the blockchain, (usually .bit domain names). This explorer supports browsing and querying Namecoin data, provided that the configuration value for COIN_NAME is set to Namecoin.
 
+## Setup:
+
+I strongly recommend following https://www.digitalocean.com/community/tutorials/how-to-install-ruby-on-rails-with-rvm-on-ubuntu-16-04, which covers getting started with Ruby, Rails, and RVM. RVM will keep you from running into dependency hell, because the exact version of Ruby that I was using when I developed this will be automatically invoked by RVM. You can use a different distro of Linux if you want, but I can't help you with it if you run into any problems. Once everything has been installed, you should be able to clone this repository, cd into the folder, and run:
+
+```
+gem install bundler
+bundler install
+```
+
+To determine if you've gotten it (mostly) set up correctly, you should be able to run ```rails c```, and get dropped into a console. If you get any errors, something isn't installed correctly - the biggest culprits tend to be gems that require native extensions (generally, C libraries and a compiler) before installing. If you get an error for one of these, I suggest googling it - the solution almost always consists of apt-getting some library, then running ```bundle install``` again. Afterwards, you should also be able to browse to the home page (after running ```rails s```, to actually launch a web server), search for a transaction / block, and more. You won't be able to search by address for a while, until the explorer has finished indexing all relevant transactions - this process can take several days or weeks to complete, depending on the cryptocurrency, but most other functionality will work just fine.
+
+To create the database, you'll need to run ```rails db:structure:load```. This will create an empty database for you, along with the indexes required to do fast searches by address, UTXO, and more. Ensure that you've set up a config/application.yml file (from below) before running this command, otherwise it won't have a DB to actually write to.
+
+Once it's running, you'll need to add a crontab entry to index the blockchain, which will look something like this:
+```* * * * * curl https://namecoin.cyphrs.com/tick > /dev/null 2>&1``` . This will ensure that new blocks are automatically indexed as they come in, and old blocks are automatically indexed when the site notices that they're missing. It is perfectly fine if the process of indexing is interrupted, as relaunching the indexer will delete any incomplete work (half-finished blocks) before starting.
+
+If you don't want to keep a terminal open to run the site (```rails s```, on port 3000), I suggest setting up Phusion Passenger and Nginx, which seems to be the preferred way to run Rails sites (https://www.phusionpassenger.com/library/install/nginx/install/oss/xenial/).
+
+## Missing Transactions:
+
+The indexer is designed to go block-by-block, look at every transaction within each block, and write down each payment that was made within each transaction. Occasionally, a transaction will be encountered that can not be decoded - these can happen for a few reasons:
+
+- A bug in the explorer
+- A bug in the daemon
+- Unsupported transaction format (SegWit support is coming soon)
+- JSON RPC errors
+
+The TXID of an invalid transaction is recorded, so that it can be re-checked later on (and indexing can continue on the remaining valid transactions). The indexer currently doesn't attempt to re-check invalid transactions when it attempts re-indexing again, but it will shortly.
+
+If a transaction is marked as invalid, that just means that the explorer cannot use it in the separate indexes it maintains. If that transaction pays to another transaction which is accepted by the explorer, that transaction will be recorded, because the explorer doesn't rely on historical transactions to validate new transactions.
+
 ## Database info:
 
 Unfortunately, bitcoind doesn't support any means of querying an address, unless it's your own. Adding an address to bitcoind to get the balance takes a while, as it has to re-index the blockchain to find transactions corresponding to that address. This isn't acceptable, as most people want to check balances of specific addresses. Why it isn't included is beyond my comprehension, but whatever.
