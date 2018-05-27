@@ -43,15 +43,38 @@ Unfortunately, bitcoind doesn't support any means of querying an address, unless
 
 To work around this, we have to use our own database, and ask bitcoind about every block (and then in turn every single transaction in each block), writing down the inputs and outputs. When a user wants to find out the balance for a wallet, we can then query our index for transactions involving that address, and return the relevant rows. To do this, a copy of postgres (or any other database supported by ActiveRecord) is required, in addition to the LevelDB database used by bitcoind. Then you'll have to generate an index, which is a slow process taking multiple days. If data hasn't been indexed, a warning will show up on address lookup pages stating that the data it has is incomplete. The good news is that an initial index only has to be done once - subsequent updates are super fast, as only the latest block data has to be added.
 
-Sample config/application.yml - replace values as necessary: 
+## Configuration Options:
+
+All of the explorer's configuration options are set in config/application.yml - these include the path to the daemon (and username/password/port), cosmetic options (colors), and the site name itself.
+
+Notably missing from this file are any configuration options for the cryptocurrency daemon itself. If you're looking to change settings for that, I suggest launching the daemon with the -conf parameter, which tells it to open a file to read settings instead of expecting them on the command line. For example, launching Namecoin with:
+
+```/mnt/blockchains/namecoin/namecoin-0.13.99/bin/namecoind -conf=/home/ubuntu/.namecoin/namecoin.conf```
+
+Tells it to read the configuration options for namecoind from that file, where we can do things like set it to testnet, change the port, add additional indexes, and change the data directory. By making changes here (and not to the explorer's source code), we don't have to worry about code change conflicts. Here's a sample namecoin.conf configuration:
+
+```$ cat ~/.namecoin/namecoin.conf
+rpcuser=XXX
+rpcpassword=YYY
+rpcport=ZZZZ
+txindex=1
+daemon=1
+namehistory=1
+datadir=/mnt/blockchains/namecoin/data
+rpcthreads=8
+rpcworkqueue=160
+rpctimeout=300
+```
+
+And here's a sample ```config/application.yml``` - replace values as necessary: 
 
 - COIN_NAME: 'Namecoin'
 - COIN_SYMBOL: 'NMC'
 - DAEMON_NAME: 'namecoind'
 - CLI: '/mnt/blockchains/namecoin/namecoin-0.13.99/bin/namecoin-cli'
-- RPC_USER: 'SAMPLE'
-- RPC_PASSWORD: 'SAMPLE'
-- RPC_PORT: 'SAMPLE'
+- RPC_USER: 'XXX'
+- RPC_PASSWORD: 'YYY'
+- RPC_PORT: 'ZZZZ'
 - SITE_TITLE_TEXT: 'My Namecoin Block Explorer'
 - SITE_HEADING: 'My Namecoin'
 - SITE_SUBTITLE: 'Block Explorer'
