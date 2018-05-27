@@ -143,36 +143,46 @@ class ApplicationController < ActionController::Base
   end
 
   def tick
-    generate_address_index
-    render plain: 'okay'
+    if generate_address_index == :error
+      render plain: "Another process is probably indexing already."
+    else
+      render plain: 'okay'
+    end
   end
 
   def generate_address_index
     ActiveRecord::Base.logger.level = 2
 
-    puts "Loading block index..."
-    total_blocks = ApplicationController::cli('getblockcount').to_i
+    contents = File.open("indexer.lock", "r"){ |file| file.read }
+    if contents && (contents.to_i + 120 > Time.now.to_i)
+      puts "Another process is probably indexing already. Exiting..."
+      return :error
+    else
+      puts "Loading block index..."
+      total_blocks = ApplicationController::cli('getblockcount').to_i
 
-    block_array = []
+      block_array = []
 
-    Block.where(ended: false).find_each do |block|
-        Payment.where(blockhash: block.blockhash).find_each do |payment|
-            payment.destroy
+      Block.where(ended: false).find_each do |block|
+          Payment.where(blockhash: block.blockhash).find_each do |payment|
+              payment.destroy
+          end
+          block.destroy
+      end
+
+      block_array = (1..total_blocks).to_a - Block.pluck(:height)
+      puts "Indexing payments in #{block_array.count} blocks"
+
+      Parallel.map(block_array) do |block|
+        ActiveRecord::Base.connection_pool.with_connection do
+          index_block(block)
         end
-        block.destroy
-    end
-
-    block_array = (1..total_blocks).to_a - Block.pluck(:height)
-    puts "Indexing payments in #{block_array.count} blocks"
-
-    Parallel.map(block_array) do |block|
-      ActiveRecord::Base.connection_pool.with_connection do
-        index_block(block)
       end
     end
   end
 
   def index_block(height)
+    File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
     if !Block.where(height: height, started: true, ended: true).first
       block_hash = ApplicationController::cli(['getblockhash', height.to_s])
       b = Block.create(height: height, blockhash: block_hash, started: true)
@@ -214,6 +224,7 @@ class ApplicationController < ActionController::Base
       InvalidTransaction.import invalid_transactions
 
       b.update(ended: true)
+      File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
       puts height
     end
   end
