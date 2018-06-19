@@ -447,4 +447,20 @@ class ApplicationController < ActionController::Base
     end
     render json: unspent_outputs.to_json
   end
+
+  def api_estimatefee
+    render json: ApplicationController::cli(['estimatefee', params[:blocks]])
+  end
+
+  def api_estimatepriority
+    render json: ApplicationController::cli(['estimatepriority', params[:blocks]])
+  end
+
+  def api_estimatesmartfee
+    render json: ApplicationController::cli(['estimatesmartfee', params[:blocks]])
+  end
+
+  def api_estimatesmartpriority
+    render json: ApplicationController::cli(['estimatesmartpriority', params[:blocks]])
+  end
 end

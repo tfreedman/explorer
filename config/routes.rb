@@ -48,5 +48,10 @@ Rails.application.routes.draw do
   get '/api/utxo/:address' => 'application#api_utxo'
   get '/api/gettransactionsbyaddress/:address' => 'application#api_gettransactionsbyaddress'
 
+  get '/api/estimatefee/:blocks' => 'application#api_estimatefee'
+  get '/api/estimatepriority/:blocks' => 'application#api_estimatepriority'
+  get '/api/estimatesmartfee/:blocks' => 'application#api_estimatesmartfee'
+  get '/api/estimatesmartpriority/:blocks' => 'application#api_estimatesmartpriority'
+
   get '/' => 'application#home'
 end

@@ -100,6 +100,19 @@
   <li>signrawtransaction "hexstring" ( [{"txid":"id","vout":n,"scriptPubKey":"hex","redeemScript":"hex"},...] ["privatekey1",...] sighashtype )</li>
 </ul>
 
+<h2>Utilities</h2>
+<ul>
+  <li>createmultisig nrequired ["key",...]</li>
+  <li>createwitnessaddress "script"</li>
+  <li><a href="/api/estimatefee/1">estimatefee nblocks</a></li>
+  <li><a href="/api/estimatepriority/1">estimatepriority nblocks</a></li>
+  <li><a href="/api/estimatesmartfee/1">estimatesmartfee nblocks</a></li>
+  <li><a href="/api/estimatesmartpriority/1">estimatesmartpriority nblocks</a></li>
+  <li>signmessagewithprivkey "privkey" "message"</li>
+  <li>validateaddress "namecoinaddress"</li>
+  <li>verifymessage "namecoinaddress" "signature" "message"</li>
+</ul>
+
 <h2>Custom</h2>
 <ul>
   <li><a href="/api/gettransactionsbyaddress/N8zVvY2xGZRRRNv7rypVnUaePmjJizEo1G">gettransactionsbyaddress</a></li>
