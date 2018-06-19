@@ -173,7 +173,7 @@ class ApplicationController < ActionController::Base
       block_array = (1..total_blocks).to_a - Block.pluck(:height)
       puts "Indexing payments in #{block_array.count} blocks"
 
-      Parallel.map(block_array) do |block|
+      Parallel.map(block_array, isolation: true) do |block|
         ActiveRecord::Base.connection_pool.with_connection do
           index_block(block)
         end
