@@ -153,7 +153,12 @@ class ApplicationController < ActionController::Base
   def generate_address_index
     ActiveRecord::Base.logger.level = 2
 
-    contents = File.open("indexer.lock", "r"){ |file| file.read }
+    if File.exist?("indexer.lock")
+      contents = File.open("indexer.lock", "r"){ |file| file.read }
+    else
+      contents = 0
+    end
+
     if contents && (contents.to_i + 120 > Time.now.to_i)
       puts "Another process is probably indexing already. Exiting..."
       return :error
