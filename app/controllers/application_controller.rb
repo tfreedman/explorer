@@ -95,7 +95,7 @@ class ApplicationController < ActionController::Base
 
   def address
     @title = "Address #{params[:address]}"
-    @address = Payment.where(address: params[:address])
+    @address = Payment.where(address: params[:address]).order('id desc')
 
     @complete_data = Block.where(ended: true).count == ApplicationController::cli('getblockcount').to_i
 
@@ -164,10 +164,24 @@ class ApplicationController < ActionController::Base
       block_array = []
 
       Block.where(ended: false).find_each do |block|
-          Payment.where(blockhash: block.blockhash).find_each do |payment|
+          Payment.where(blockhash: block.blockhash.strip).find_each do |payment|
               payment.destroy
           end
           block.destroy
+      end
+
+      puts "Re-scanning #{InvalidTransaction.count} invalid transactions"
+      ActiveRecord::Base.connection_pool.with_connection do
+        results = index_transactions(InvalidTransaction.pluck(:transaction_id))
+
+        puts "#{results[:valid_transactions].count} valid transactions found"
+        puts "#{results[:invalid_transactions].count} invalid transactions stuck in pool"
+
+        ActiveRecord::Base.transaction do
+          InvalidTransaction.destroy_all
+          Payment.import results[:payments]
+          InvalidTransaction.import results[:invalid_transactions]
+        end
       end
 
       block_array = (1..total_blocks).to_a - Block.pluck(:height)
@@ -175,58 +189,68 @@ class ApplicationController < ActionController::Base
 
       Parallel.map(block_array, isolation: true) do |block|
         ActiveRecord::Base.connection_pool.with_connection do
-          index_block(block)
+          results = index_block(block)
+
+          ActiveRecord::Base.transaction do
+            Payment.import results[:payments]
+            InvalidTransaction.import results[:invalid_transactions]
+          end
+
         end
       end
     end
   end
 
   def index_block(height)
-    File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
     if !Block.where(height: height, started: true, ended: true).first
-      block_hash = ApplicationController::cli(['getblockhash', height.to_s])
-      b = Block.create(height: height, blockhash: block_hash, started: true)
-      txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
+      b = Block.create(height: height, blockhash: ApplicationController::cli(['getblockhash', height.to_s]), started: true)
+      txids = JSON.parse(ApplicationController::cli(['getblock', ApplicationController::cli(['getblockhash', height.to_s])]))["tx"]
       
-      payments = []
-      invalid_transactions = []
-
-      txids.each_with_index do |txid, index|
-        begin
-          tx = get_transaction(txid, true, false)
-
-          tx["vin"].each do |vin|
-            if vin["prevTransaction"]
-              if vin["coinbase"].nil?
-                vout = nil
-              else
-                vout = vin["vout"]
-              end
-              payments << Payment.new(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"], blockhash: block_hash, n: vout)
-            end
-          end
-
-          tx["vout"].each do |vout|
-            if vout["scriptPubKey"]["addresses"].nil?
-              output_address = nil
-            else
-              output_address = vout["scriptPubKey"]["addresses"][0]
-            end
-            payments << Payment.new(address: output_address, txid: tx['txid'], credit: vout["value"], blockhash: block_hash, n: vout["n"])
-          end
-        rescue Exception => e
-          puts "FAILED ON TXID #{txid} - #{e}"
-          invalid_transactions << InvalidTransaction.new(transaction_id: txid)
-        end
-      end
-
-      Payment.import payments
-      InvalidTransaction.import invalid_transactions
+      results = index_transactions(txids)
 
       b.update(ended: true)
-      File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
       puts height
+      return results
     end
+  end
+
+  def index_transactions(txids)
+    payments = []
+    valid_transactions = []
+    invalid_transactions = []
+    File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
+    txids.each_with_index do |txid, index|
+      begin
+        tx = get_transaction(txid, true, false)
+
+        tx["vin"].each do |vin|
+          if vin["prevTransaction"]
+            if vin["coinbase"].nil?
+              vout = -1
+            else
+              vout = vin["vout"]
+            end
+            payments << Payment.new(address: vin["prevTransaction"]["vout"][vin["vout"]]["scriptPubKey"]["addresses"][0], txid: tx['txid'], debit: vin["prevTransaction"]["vout"][vin["vout"]]["value"], credit: 0, blockhash: tx["blockhash"], n: vout)
+          end
+        end
+
+        tx["vout"].each do |vout|
+          if vout["scriptPubKey"]["addresses"].nil?
+            output_address = nil
+          else
+            output_address = vout["scriptPubKey"]["addresses"][0]
+          end
+          payments << Payment.new(address: output_address, txid: tx['txid'], debit: 0, credit: vout["value"], blockhash: tx["blockhash"], n: vout["n"])
+        end
+        valid_transactions << txid
+      rescue StandardError => e
+        puts "FAILED ON TXID #{txid} - #{e}"
+        invalid_transactions << InvalidTransaction.new(transaction_id: txid)
+      end
+    end
+    File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
+
+    return {payments: payments, valid_transactions: valid_transactions, invalid_transactions: invalid_transactions}
   end
 
   def self.cli(command)
@@ -404,9 +428,9 @@ class ApplicationController < ActionController::Base
     credits = []
     debits = []
     Payment.where(address: params[:address]).find_each do |a|
-      if a.debit.nil?
+      if a.debit == 0
         credits << {txid: a.txid, debit: a.debit, credit: a.credit}
-      elsif a.credit.nil?
+      elsif a.credit == 0
         debits << {txid: a.txid, debit: a.debit, credit: a.credit}
       end
     end

@@ -4,11 +4,11 @@
 <table>
   <tr>
     <td>Transactions in</td>
-    <td><%= @address.where.not(credit: nil).count %></td>
+    <td><%= @address.where.not(credit: nil).where.not(credit: 0).count %></td>
   </tr>
   <tr>
     <td>Transactions out</td>
-    <td><%= @address.where.not(debit: nil).count %></td>
+    <td><%= @address.where.not(debit: nil).where.not(debit: 0).count %></td>
   </tr>
   <tr>
     <td>Total received</td>
@@ -39,13 +39,17 @@
       <td><a href="/tx/<%= a.txid %>"><%= a.txid[0..10] %>...</a></td>
       <td><a href="/block/<%= a.block %>"><%= a.block %></a></td>
       <td>
-        <% if a.debit %>
+        <% if !a.debit.nil? && a.debit != 0 %>
           <%= a.debit %> <%= ENV['COIN_SYMBOL'] %>
+        <% else %>
+         - 
         <% end %>
       </td>
       <td>
-        <% if a.credit %>
+        <% if !a.credit.nil? && a.credit != 0 %>
           <%= a.credit %> <%= ENV['COIN_SYMBOL'] %>
+        <% else %>
+         - 
         <% end %>
       </td>
       <td><%= a.balance %> <%= ENV['COIN_SYMBOL'] %></td>
