@@ -3,12 +3,11 @@ class ApplicationController < ActionController::Base
 
   def home
     @title = 'Home'
-    @output = ApplicationController::cli(['getblockchaininfo'])
-    @output = JSON.parse(@output)
-  
+    @output = ApplicationController::cli(['getblockcount']).to_i
+
     @latest_blocks = Array.new
-    blocks = @output["blocks"] - 6
-    @output["blocks"].downto(blocks).each do |n|
+    blocks = @output - 6
+    @output.downto(blocks).each do |n|
       block = ApplicationController::get_block(n)
       total_sent = 0
       block["tx"].each do |txid|
