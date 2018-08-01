@@ -215,6 +215,8 @@ class ApplicationController < ActionController::Base
         end
       end
       puts "Done indexing all known blocks"
+      $lockfile[:pid] = -1 #Not a real PID, so the re-indexer will treat this as a dead process and immediately run again
+      File.write('indexer.lock', $lockfile.to_yaml)
     end
   end
 
