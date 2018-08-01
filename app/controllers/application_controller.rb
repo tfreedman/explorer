@@ -155,7 +155,7 @@ class ApplicationController < ActionController::Base
     if File.exist?("indexer.lock")
       $lockfile = YAML.load_file('indexer.lock')
     else
-      $lockfile = {last_block: 0, pid: Process.ppid}
+      $lockfile = {last_block_time: 0, pid: Process.ppid, invalid_scan_time: 0}
     end
 
     begin
@@ -181,18 +181,22 @@ class ApplicationController < ActionController::Base
           block.destroy
       end
 
-      puts "Re-scanning #{InvalidTransaction.count} invalid transactions"
-      ActiveRecord::Base.connection_pool.with_connection do
-        results = index_transactions(InvalidTransaction.pluck(:transaction_id))
+      if $lockfile[:invalid_scan_time] + 86400 < Time.now.to_i
+        puts "Re-scanning #{InvalidTransaction.count} invalid transactions"
+        ActiveRecord::Base.connection_pool.with_connection do
+          results = index_transactions(InvalidTransaction.pluck(:transaction_id))
+  
+          puts "-  #{results[:valid_transactions].count} valid transactions found"
+          puts "-  #{results[:invalid_transactions].count} invalid transactions stuck in pool"
 
-        puts "#{results[:valid_transactions].count} valid transactions found"
-        puts "#{results[:invalid_transactions].count} invalid transactions stuck in pool"
-
-        ActiveRecord::Base.transaction do
-          InvalidTransaction.destroy_all
-          Payment.import results[:payments]
-          InvalidTransaction.import results[:invalid_transactions]
+          ActiveRecord::Base.transaction do
+            InvalidTransaction.destroy_all
+            Payment.import results[:payments]
+            InvalidTransaction.import results[:invalid_transactions]
+          end
         end
+        $lockfile[:invalid_scan_time] = Time.now.to_i
+        File.write('indexer.lock', $lockfile.to_yaml)
       end
 
       block_array = (1..total_blocks).to_a - Block.pluck(:height)
@@ -206,9 +210,11 @@ class ApplicationController < ActionController::Base
             Payment.import results[:payments]
             InvalidTransaction.import results[:invalid_transactions]
           end
-
+          $lockfile[:last_block_time] = Time.now.to_i
+          File.write('indexer.lock', $lockfile.to_yaml)
         end
       end
+      puts "Done indexing all known blocks"
     end
   end
 
@@ -259,8 +265,6 @@ class ApplicationController < ActionController::Base
         invalid_transactions << InvalidTransaction.new(transaction_id: txid)
       end
     end
-    File.write('indexer.lock', {last_block: Time.now.to_i, pid: Process.ppid}.to_yaml)
-
     return {payments: payments, valid_transactions: valid_transactions, invalid_transactions: invalid_transactions}
   end
 
