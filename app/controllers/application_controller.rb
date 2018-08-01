@@ -154,12 +154,19 @@ class ApplicationController < ActionController::Base
     ActiveRecord::Base.logger.level = 2
 
     if File.exist?("indexer.lock")
-      contents = File.open("indexer.lock", "r"){ |file| file.read }
+      $lockfile = YAML.load_file('indexer.lock')
     else
-      contents = 0
+      $lockfile = {last_block: 0, pid: Process.ppid}
     end
 
-    if contents && (contents.to_i + 120 > Time.now.to_i)
+    begin
+      Process.getpgid($lockfile[:pid])
+    rescue Errno::ESRCH => e
+      # Whatever process previously locked the lockfile is 100% dead, so we can take it over.
+      $lockfile[:pid] = Process.ppid
+    end
+
+    if $lockfile && $lockfile[:pid] != Process.ppid
       puts "Another process is probably indexing already. Exiting..."
       return :error
     else
@@ -224,7 +231,6 @@ class ApplicationController < ActionController::Base
     payments = []
     valid_transactions = []
     invalid_transactions = []
-    File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
     txids.each_with_index do |txid, index|
       begin
         tx = get_transaction(txid, true, false)
@@ -254,7 +260,7 @@ class ApplicationController < ActionController::Base
         invalid_transactions << InvalidTransaction.new(transaction_id: txid)
       end
     end
-    File.open('indexer.lock', 'w') { |file| file.write(Time.now.to_i) }
+    File.write('indexer.lock', {last_block: Time.now.to_i, pid: Process.ppid}.to_yaml)
 
     return {payments: payments, valid_transactions: valid_transactions, invalid_transactions: invalid_transactions}
   end
