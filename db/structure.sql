@@ -32,11 +32,11 @@ SET default_with_oids = false;
 CREATE TABLE public.payments (
     id integer NOT NULL,
     address text,
-    txid text,
-    debit numeric,
-    credit numeric,
-    blockhash text,
-    n integer
+    txid text NOT NULL,
+    debit numeric NOT NULL,
+    credit numeric NOT NULL,
+    blockhash text NOT NULL,
+    n integer NOT NULL
 );
 
 

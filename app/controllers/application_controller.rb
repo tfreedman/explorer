@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
 
   def home
     @title = 'Home'
-    @output = ApplicationController::cli('getblockchaininfo')
+    @output = ApplicationController::cli(['getblockchaininfo'])
     @output = JSON.parse(@output)
   
     @latest_blocks = Array.new
@@ -169,7 +169,7 @@ class ApplicationController < ActionController::Base
       block_array = []
 
       Block.where(ended: false).find_each do |block|
-          Payment.where(blockhash: block.blockhash.strip).find_each do |payment|
+          Payment.where(blockhash: block.blockhash).find_each do |payment|
               payment.destroy
           end
           block.destroy
@@ -208,8 +208,9 @@ class ApplicationController < ActionController::Base
 
   def index_block(height)
     if !Block.where(height: height, started: true, ended: true).first
-      b = Block.create(height: height, blockhash: ApplicationController::cli(['getblockhash', height.to_s]), started: true)
-      txids = JSON.parse(ApplicationController::cli(['getblock', ApplicationController::cli(['getblockhash', height.to_s])]))["tx"]
+      block_hash = ApplicationController::cli(['getblockhash', height.to_s]).strip
+      b = Block.create(height: height, blockhash: block_hash, started: true)
+      txids = JSON.parse(ApplicationController::cli(['getblock', block_hash]))["tx"]
       
       results = index_transactions(txids)
 
