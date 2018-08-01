@@ -102,7 +102,11 @@
           <table>
             <% tx["vout"].each do |vout| %>
               <tr>
-                <td><a href="/address/<%= vout['scriptPubKey']['addresses'][0] %>"><%= vout["scriptPubKey"]["addresses"][0] %></a></td>
+                <% if vout['scriptPubKey']['addresses'] %>
+                  <td><a href="/address/<%= vout['scriptPubKey']['addresses'][0] %>"><%= vout["scriptPubKey"]["addresses"][0] %></a></td>
+                <% else %>
+                  <td><a href="/address/Unknown">Unknown</a></td>
+                <% end %>
                 <td><%= vout["value"] %> <%= ENV['COIN_SYMBOL'] %></td>
               </tr>
             <% end %>
