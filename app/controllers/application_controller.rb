@@ -229,10 +229,10 @@ class ApplicationController < ActionController::Base
       begin
         tx = get_transaction(txid, true, false)
 
-        tx["vin"].each do |vin|
+        tx["vin"].each_with_index do |vin, vin_index|
           if vin["prevTransaction"]
             if vin["coinbase"].nil?
-              vout = -1
+              vout = vin_index.to_s + "#" + vin["vout"].to_s
             else
               vout = vin["vout"]
             end
@@ -242,7 +242,7 @@ class ApplicationController < ActionController::Base
 
         tx["vout"].each do |vout|
           if vout["scriptPubKey"]["addresses"].nil?
-            output_address = nil
+            output_address = "Unknown"
           else
             output_address = vout["scriptPubKey"]["addresses"][0]
           end
