@@ -272,7 +272,7 @@ class ApplicationController < ActionController::Base
 
   def self.cli(command)
     require 'open3'
-    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['RPC_USER'], 'rpcpassword' => ENV['RPC_PASSWORD'], 'rpcport' => ENV['RPC_PORT']}, ENV['CLI'], *command)
+    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['RPC_USER'], 'rpcpassword' => ENV['RPC_PASSWORD'], 'rpcport' => ENV['RPC_PORT'], 'rpcconnect' => ENV['RPC_CONNECT']}, ENV['CLI'], *command)
     return stdout_and_stderr_str
   end
 
