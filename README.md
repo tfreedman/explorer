@@ -19,8 +19,28 @@ To determine if you've gotten it (mostly) set up correctly, you should be able t
 
 To create the database, you'll need to run ```rails db:structure:load```. This will create an empty database for you, along with the indexes required to do fast searches by address, UTXO, and more. Ensure that you've set up a config/application.yml file (from below) before running this command, otherwise it won't have a DB to actually write to.
 
-Once it's running, you'll need to add a crontab entry to index the blockchain, which will look something like this:
-```* * * * * curl https://namecoin.cyphrs.com/tick > /dev/null 2>&1``` . This will ensure that new blocks are automatically indexed as they come in, and old blocks are automatically indexed when the site notices that they're missing. It is perfectly fine if the process of indexing is interrupted, as relaunching the indexer will delete any incomplete work (half-finished blocks) before starting.
+Once it's running, you'll need to have it index the blockchain, in order to browse /address/ pages, or use the UTXO / balance APIs. Since the initial index will take a while, I suggest running:
+
+```rails c```
+
+```
+x = ApplicationController.new
+while true do
+  begin
+    x.generate_address_index
+  rescue Parallel::DeadWorker, Parallel::UndumpableException
+    ActiveRecord::Base.establish_connection
+    File.delete('indexer.lock')
+  end
+  sleep(10)
+end
+```
+
+This will effectively tell it to run as fast as it can, indexing every block it knows about, and restart in case of any failure whatsoever. Afterwards, when the initial sync is complete, I suggest creating a crontab entry, to have it re-index any new blocks that have come in since it last ran. The crontab entry we use looks like this:
+
+```* * * * * /bin/bash -l -c 'cd /home/ubuntu/sites/namecoin.cyphrs.com && bundle exec bin/rails runner -e development '\''x = ApplicationController.new ; x.tick'\'' >> /dev/null 2>&1'```
+
+The indexer ensures that new blocks are automatically indexed as they come in, and old blocks are automatically indexed when the site notices that they're missing. It is perfectly fine if the process of indexing is interrupted, as relaunching the indexer will delete any incomplete work (half-finished blocks) before attempting that block again.
 
 If you don't want to keep a terminal open to run the site (```rails s```, on port 3000), I suggest setting up Phusion Passenger and Nginx, which seems to be the preferred way to run Rails sites (https://www.phusionpassenger.com/library/install/nginx/install/oss/xenial/).
 

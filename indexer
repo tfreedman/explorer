@@ -1,0 +1,4 @@
+while true; do
+  /bin/bash -l -c 'bundle exec bin/rails runner -e development '\''x = ApplicationController.new ; x.tick'\'''
+  sleep 300
+done

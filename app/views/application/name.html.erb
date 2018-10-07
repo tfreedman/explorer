@@ -1,4 +1,4 @@
-<h1>Name <%= params[:name] %> <% if params[:type].downcase == 'd' %> (<%= params[:name] %>.bit)<% end %></h1>
+<h1>Name <%= params[:name] %> <% if params[:name].split('/')[0].downcase == 'd' %> (<%= params[:name].split('/')[1] %>.bit)<% end %></h1>
 
 <% if @output %>
   <div class="flex-container">
@@ -53,5 +53,5 @@
     </div>
   </div>
 <% else %>
-  <p class="cf"><em><%= params[:name] %><% if params[:type].downcase == 'd' %> (<%= params[:name] %>.bit)<% end %> is available. <a href="https://registrar.cyphrs.com/<%= params[:type] %>/<%= params[:name] %>">Click here to register it for free.</a></em></p>
+  <p class="cf"><em><%= params[:name] %><% if params[:name].split('/')[0].downcase == 'd' %> (<%= params[:name].split('/')[1] %>.bit)<% end %> is available. <a href="https://registrar.cyphrs.com/<%= params[:name] %>">Click here to register it for free.</a></em></p>
 <% end %>

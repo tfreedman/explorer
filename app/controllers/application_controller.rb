@@ -43,7 +43,7 @@ class ApplicationController < ActionController::Base
 
   def search
     query = params[:query]    
-    if query.downcase.start_with?('d/') || query.downcase.start_with?('id/')
+    if query.downcase.include?('/')
       redirect_to "/name/#{query}"
     elsif query.downcase.end_with?('.bit')
       redirect_to "/name/d/#{query[0..-5]}"
@@ -110,15 +110,9 @@ class ApplicationController < ActionController::Base
 
   def name
     @title = "Name #{params[:name]}"
-    params[:type] = params[:type].downcase
-    params[:name] = params[:name].downcase
-    if params[:type] == 'd'
-      @output = ApplicationController::cli(['name_show', 'd/' + params[:name]])
-      @history = ApplicationController::cli(['name_history', 'd/' + params[:name]])
-    elsif params[:type] == 'id'
-      @output = ApplicationController::cli(['name_show', 'id/' + params[:name]])
-      @history = ApplicationController::cli(['name_history', 'id/' + params[:name]])
-    end
+    
+    @output = ApplicationController::cli(['name_show', params[:name]])
+    @history = ApplicationController::cli(['name_history', params[:name]])
       
     if !@output.include?('name not found')
       @output = JSON.parse(@output)
@@ -278,7 +272,7 @@ class ApplicationController < ActionController::Base
 
   def self.cli(command)
     require 'open3'
-    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['RPC_USER'], 'rpcpassword' => ENV['RPC_PASSWORD'], 'rpcport' => ENV['RPC_PORT']}, ENV['CLI'], *command)
+    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['RPC_USER'], 'rpcpassword' => ENV['RPC_PASSWORD'], 'rpcport' => ENV['RPC_PORT'], 'rpcconnect' => ENV['RPC_CONNECT']}, ENV['CLI'], *command)
     return stdout_and_stderr_str
   end
 
