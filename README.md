@@ -36,9 +36,7 @@ while true do
 end
 ```
 
-This will effectively tell it to run as fast as it can, indexing every block it knows about, and restart in case of any failure whatsoever. Afterwards, when the initial sync is complete, I suggest creating a crontab entry, to have it re-index any new blocks that have come in since it last ran. The crontab entry we use looks like this:
-
-```* * * * * /bin/bash -l -c 'cd /home/ubuntu/sites/namecoin.cyphrs.com && bundle exec bin/rails runner -e development '\''x = ApplicationController.new ; x.tick'\'' >> /dev/null 2>&1'```
+This will effectively tell it to run as fast as it can, indexing every block it knows about, and restart in case of any failure whatsoever. Afterwards, when the initial sync is complete, I suggest creating a service to automatically run the file 'indexer' - it's a bash script that will just loop infinitely and scan any new blocks that have come in.
 
 The indexer ensures that new blocks are automatically indexed as they come in, and old blocks are automatically indexed when the site notices that they're missing. It is perfectly fine if the process of indexing is interrupted, as relaunching the indexer will delete any incomplete work (half-finished blocks) before attempting that block again.
 
