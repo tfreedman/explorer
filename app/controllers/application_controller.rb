@@ -184,19 +184,25 @@ class ApplicationController < ActionController::Base
       if $lockfile[:invalid_scan_time] + 86400 < Time.now.to_i
         puts "Re-scanning #{InvalidTransaction.count} invalid transactions"
         ActiveRecord::Base.connection_pool.with_connection do
-          results = index_transactions(InvalidTransaction.pluck(:transaction_id))
+          InvalidTransaction.find_each do |invalid_transaction|
+            results = index_transactions([] << invalid_transaction.transaction_id)
   
-          puts "-  #{results[:valid_transactions].count} valid transactions found"
-          puts "-  #{results[:invalid_transactions].count} invalid transactions stuck in pool"
+#            puts "-  #{results[:valid_transactions].count} valid transactions found"
+#            puts "-  #{results[:invalid_transactions].count} invalid transactions stuck in pool"
 
-          ActiveRecord::Base.transaction do
-            InvalidTransaction.destroy_all
-            Payment.import results[:payments]
-            InvalidTransaction.import results[:invalid_transactions]
+            begin
+              ActiveRecord::Base.transaction do
+                invalid_transaction.destroy
+                Payment.import results[:payments]
+                InvalidTransaction.import results[:invalid_transactions]
+              end
+            rescue ActiveRecord::RecordNotUnique
+              puts "#{invalid_transaction.transaction_id} has a problem."
+            end
           end
+          $lockfile[:invalid_scan_time] = Time.now.to_i
+          File.write('indexer.lock', $lockfile.to_yaml)
         end
-        $lockfile[:invalid_scan_time] = Time.now.to_i
-        File.write('indexer.lock', $lockfile.to_yaml)
       end
 
       block_array = (1..total_blocks).to_a - Block.pluck(:height)
